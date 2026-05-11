@@ -2,12 +2,14 @@ import { useStore } from '../../store'
 import { useRestoreDirectory } from '../../hooks/useFileSystem'
 import { deleteHandle } from '../../db'
 import styles from './FileTree/FileTree.module.css'
+import { useT } from '../../i18n'
 
 export default function RecentDirList() {
   const recentDirs = useStore((s) => s.recentDirs)
   const setRecentDirs = useStore((s) => s.setRecentDirs)
   const restoreDirectory = useRestoreDirectory()
   const setActiveTab = useStore((s) => s.setActiveTab)
+  const t = useT()
 
   async function handleClick(index: number) {
     const dir = recentDirs[index]
@@ -23,7 +25,7 @@ export default function RecentDirList() {
   }
 
   if (recentDirs.length === 0) {
-    return <div className={styles.empty}>暂无最近目录</div>
+    return <div className={styles.empty}>{t('noRecentDirs')}</div>
   }
 
   return (
@@ -49,7 +51,7 @@ export default function RecentDirList() {
               padding: '0 2px',
               flexShrink: 0,
             }}
-            title="从列表移除"
+            title={t('removeFromList')}
             onClick={(e) => handleDelete(e, i)}
           >
             ✕

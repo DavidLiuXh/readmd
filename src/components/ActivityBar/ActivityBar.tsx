@@ -1,12 +1,7 @@
 import styles from './ActivityBar.module.css'
 import { useStore } from '../../store'
+import { useT } from '../../i18n'
 import type { TabId } from '../../types'
-
-const TABS: { id: TabId; icon: string; title: string }[] = [
-  { id: 'files', icon: '📁', title: '文件树' },
-  { id: 'search', icon: '🔍', title: '搜索' },
-  { id: 'recent', icon: '🕒', title: '最近目录' },
-]
 
 export default function ActivityBar() {
   const activeTab = useStore((s) => s.activeTab)
@@ -14,6 +9,13 @@ export default function ActivityBar() {
   const setActiveTab = useStore((s) => s.setActiveTab)
   const setPanelVisible = useStore((s) => s.setPanelVisible)
   const setSearchQuery = useStore((s) => s.setSearchQuery)
+  const t = useT()
+
+  const TABS: { id: TabId; icon: string; title: string }[] = [
+    { id: 'files', icon: '📁', title: t('tabFiles') },
+    { id: 'search', icon: '🔍', title: t('tabSearch') },
+    { id: 'recent', icon: '🕒', title: t('tabRecent') },
+  ]
 
   function handleTabClick(id: TabId) {
     if (!panelVisible) setPanelVisible(true)
@@ -37,17 +39,14 @@ export default function ActivityBar() {
       <div className={styles.spacer} />
       <div className={styles.divider} />
 
-      <button
-        className={styles.iconBtn}
-        title="设置"
-      >
+      <button className={styles.iconBtn} title={t('settings')}>
         ⚙️
       </button>
 
       {!panelVisible && (
         <button
           className={styles.expandBtn}
-          title="展开面板"
+          title={t('expandPanel')}
           onClick={() => setPanelVisible(true)}
         >
           ▶

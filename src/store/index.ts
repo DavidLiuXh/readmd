@@ -1,6 +1,7 @@
 // src/store/index.ts
 import { create } from 'zustand'
 import type { TreeNode, FileLeaf, RecentDir, TabId, Theme } from '../types'
+import type { Locale } from '../i18n/locales'
 
 interface FileSystemSlice {
   rootHandle: FileSystemDirectoryHandle | null
@@ -37,11 +38,13 @@ interface ViewerSlice {
 
 interface UISlice {
   theme: Theme
+  locale: Locale
   panelVisible: boolean
   panelWidth: number
   activeTab: TabId
   searchQuery: string
   setTheme: (theme: Theme) => void
+  setLocale: (locale: Locale) => void
   setPanelVisible: (visible: boolean) => void
   setPanelWidth: (width: number) => void
   setActiveTab: (tab: TabId) => void
@@ -101,11 +104,13 @@ export const useStore = create<StoreState>((set) => ({
   setImageCacheRight: (cache) => set({ imageCacheRight: cache }),
 
   theme: 'light',
+  locale: 'zh',
   panelVisible: true,
   panelWidth: 240,
   activeTab: 'files',
   searchQuery: '',
   setTheme: (theme) => set({ theme }),
+  setLocale: (locale) => set({ locale }),
   setPanelVisible: (visible) => set({ panelVisible: visible }),
   setPanelWidth: (width) => set({ panelWidth: width }),
   setActiveTab: (tab) => set({ activeTab: tab }),

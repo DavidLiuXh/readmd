@@ -3,6 +3,7 @@ import styles from './MarkdownViewer.module.css'
 import ViewerToolbar from './ViewerToolbar'
 import RenderedContent from './RenderedContent'
 import { useStore } from '../../store'
+import { useT } from '../../i18n'
 import { renderMarkdown } from '../../lib/markdown'
 import { resolveLocalImages } from '../../lib/imageResolver'
 import type { FileLeaf } from '../../types'
@@ -80,6 +81,7 @@ export default function MarkdownViewer() {
 
   const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache)
   const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight)
+  const t = useT()
 
   if (!splitMode) {
     return (
@@ -106,10 +108,10 @@ export default function MarkdownViewer() {
           onClick={() => setActiveSide('left')}
         >
           <span className={`${styles.splitPaneLabel} ${activeSide === 'left' ? styles.splitPaneLabelActive : ''}`}>
-            左 {activeSide === 'left' ? '●' : ''}
+            {t('splitLabelLeft')} {activeSide === 'left' ? '●' : ''}
           </span>
           {!activeFile ? (
-            <div className={styles.empty}>点击此处，再选择文件</div>
+            <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : left.error ? (
             <div className={styles.errorCard}>⚠️ {left.error}</div>
           ) : (
@@ -122,10 +124,10 @@ export default function MarkdownViewer() {
           onClick={() => setActiveSide('right')}
         >
           <span className={`${styles.splitPaneLabel} ${activeSide === 'right' ? styles.splitPaneLabelActive : ''}`}>
-            右 {activeSide === 'right' ? '●' : ''}
+            {t('splitLabelRight')} {activeSide === 'right' ? '●' : ''}
           </span>
           {!activeFileRight ? (
-            <div className={styles.empty}>点击此处，再选择文件</div>
+            <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : right.error ? (
             <div className={styles.errorCard}>⚠️ {right.error}</div>
           ) : (

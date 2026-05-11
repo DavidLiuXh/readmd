@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import { useStore } from '../store'
 import type { Theme } from '../types'
+import type { Locale } from '../i18n/locales'
 
-const STORAGE_KEY = 'md-reader-theme'
+const THEME_KEY = 'md-reader-theme'
+const LOCALE_KEY = 'md-reader-locale'
 
 function getSystemTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -14,15 +16,19 @@ function applyTheme(theme: Theme): void {
 
 export function useThemeInit(): void {
   const setTheme = useStore((s) => s.setTheme)
+  const setLocale = useStore((s) => s.setLocale)
 
   useEffect(() => {
-    chrome.storage.local.get(STORAGE_KEY, (result) => {
-      const saved = result[STORAGE_KEY] as Theme | undefined
-      const theme = saved ?? getSystemTheme()
+    chrome.storage.local.get([THEME_KEY, LOCALE_KEY], (result) => {
+      const savedTheme = result[THEME_KEY] as Theme | undefined
+      const theme = savedTheme ?? getSystemTheme()
       setTheme(theme)
       applyTheme(theme)
+
+      const savedLocale = result[LOCALE_KEY] as Locale | undefined
+      if (savedLocale) setLocale(savedLocale)
     })
-  }, [setTheme])
+  }, [setTheme, setLocale])
 }
 
 export function useThemeToggle(): () => void {
@@ -33,6 +39,17 @@ export function useThemeToggle(): () => void {
     const next: Theme = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
     applyTheme(next)
-    chrome.storage.local.set({ [STORAGE_KEY]: next })
+    chrome.storage.local.set({ [THEME_KEY]: next })
+  }
+}
+
+export function useLocaleToggle(): () => void {
+  const locale = useStore((s) => s.locale)
+  const setLocale = useStore((s) => s.setLocale)
+
+  return () => {
+    const next: Locale = locale === 'zh' ? 'en' : 'zh'
+    setLocale(next)
+    chrome.storage.local.set({ [LOCALE_KEY]: next })
   }
 }

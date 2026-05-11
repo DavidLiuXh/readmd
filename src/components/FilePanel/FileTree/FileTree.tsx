@@ -2,6 +2,7 @@ import styles from './FileTree.module.css'
 import TreeNode from './TreeNode'
 import FileItem from './FileItem'
 import { useStore } from '../../../store'
+import { useT } from '../../../i18n'
 import type { TreeNode as TreeNodeType, FileLeaf } from '../../../types'
 
 function matchesQuery(node: TreeNodeType | FileLeaf, query: string): boolean {
@@ -14,11 +15,12 @@ export default function FileTree() {
   const tree = useStore((s) => s.tree)
   const searchQuery = useStore((s) => s.searchQuery)
   const rootHandle = useStore((s) => s.rootHandle)
+  const t = useT()
 
   if (tree.length === 0) {
     return (
       <div className={styles.empty}>
-        {rootHandle ? '当前目录下没有 .md 文件' : '打开一个目录以浏览 Markdown 文件'}
+        {rootHandle ? t('emptyNoMd') : t('emptyNoDir')}
       </div>
     )
   }
@@ -28,7 +30,7 @@ export default function FileTree() {
     : tree
 
   if (searchQuery && visibleTree.length === 0) {
-    return <div className={styles.empty}>没有匹配的文件</div>
+    return <div className={styles.empty}>{t('emptyNoMatch')}</div>
   }
 
   return (
