@@ -1,0 +1,110 @@
+.tree {
+  padding: 4px 0;
+  user-select: none;
+}
+
+.dirRow {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  gap: 4px;
+  color: var(--color-text);
+}
+
+.dirRow:hover {
+  background: var(--color-bg-hover);
+}
+
+.arrow {
+  font-size: 10px;
+  width: 12px;
+  display: inline-block;
+  transition: transform 0.15s;
+  color: var(--color-text-muted);
+}
+
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+.dirName {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.children {
+  padding-left: 16px;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  gap: 4px;
+  color: var(--color-text);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileRow:hover {
+  background: var(--color-bg-hover);
+}
+
+.fileRow.active {
+  background: var(--color-bg-active);
+  color: var(--color-text-active);
+}
+
+.fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 16px 12px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.pickerBtn {
+  width: calc(100% - 16px);
+  margin: 8px;
+  padding: 6px 12px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pickerBtn:hover {
+  opacity: 0.85;
+}
+
+.searchInput {
+  width: calc(100% - 24px);
+  margin: 6px 12px;
+  padding: 5px 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--color-accent);
+}

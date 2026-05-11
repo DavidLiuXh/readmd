@@ -2,6 +2,9 @@ import { useRef, useCallback, useEffect } from 'react'
 import styles from './FilePanel.module.css'
 import PanelHeader from './PanelHeader'
 import { useStore } from '../../store'
+import DirectoryPicker from './DirectoryPicker'
+import SearchBox from './SearchBox'
+import FileTree from './FileTree/FileTree'
 
 const MIN_WIDTH = 160
 const MAX_WIDTH = 400
@@ -11,6 +14,7 @@ export default function FilePanel() {
   const panelVisible = useStore((s) => s.panelVisible)
   const panelWidth = useStore((s) => s.panelWidth)
   const setPanelWidth = useStore((s) => s.setPanelWidth)
+  const activeTab = useStore((s) => s.activeTab)
   const dragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
@@ -60,8 +64,24 @@ export default function FilePanel() {
       style={{ width: panelVisible ? panelWidth : 0, minWidth: panelVisible ? panelWidth : 0 }}
     >
       <PanelHeader />
-      <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
-        Panel Content
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {activeTab === 'files' && (
+          <>
+            <DirectoryPicker />
+            <FileTree />
+          </>
+        )}
+        {activeTab === 'search' && (
+          <>
+            <SearchBox />
+            <FileTree />
+          </>
+        )}
+        {activeTab === 'recent' && (
+          <div style={{ padding: '8px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
+            最近目录（Task 9 实现）
+          </div>
+        )}
       </div>
       <div className={styles.resizeHandle} onMouseDown={onMouseDown} />
     </div>
