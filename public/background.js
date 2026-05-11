@@ -1,3 +1,3 @@
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: 'reader.html' })
+  chrome.tabs.create({ url: chrome.runtime.getURL('reader.html') })
 })
