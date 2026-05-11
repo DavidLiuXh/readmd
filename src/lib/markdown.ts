@@ -27,16 +27,14 @@ export function initMarkdown(): void {
   )
 
   // 给代码块加语言标签包裹层
+  // text 此时已经是 markedHighlight 处理过的 HTML，不能再次调用 hljs.highlight()
   const renderer: Partial<Renderer> = {
     code({ text, lang }) {
       const language = lang || ''
-      const highlighted = language && hljs.getLanguage(language)
-        ? hljs.highlight(text, { language }).value
-        : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       const langLabel = language
         ? `<span class="code-block-lang">${language}</span>`
         : ''
-      return `<div class="code-block-wrapper">${langLabel}<pre><code class="hljs language-${language}">${highlighted}</code></pre></div>`
+      return `<div class="code-block-wrapper">${langLabel}<pre><code class="hljs language-${language}">${text}</code></pre></div>`
     },
   }
   marked.use({ renderer })
