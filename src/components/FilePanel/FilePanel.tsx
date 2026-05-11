@@ -5,6 +5,7 @@ import { useStore } from '../../store'
 import DirectoryPicker from './DirectoryPicker'
 import SearchBox from './SearchBox'
 import FileTree from './FileTree/FileTree'
+import RecentDirList from './RecentDirList'
 
 const MIN_WIDTH = 160
 const MAX_WIDTH = 400
@@ -77,11 +78,7 @@ export default function FilePanel() {
             <FileTree />
           </>
         )}
-        {activeTab === 'recent' && (
-          <div style={{ padding: '8px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
-            最近目录（Task 9 实现）
-          </div>
-        )}
+        {activeTab === 'recent' && <RecentDirList />}
       </div>
       <div className={styles.resizeHandle} onMouseDown={onMouseDown} />
     </div>
