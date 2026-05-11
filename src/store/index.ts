@@ -18,12 +18,21 @@ interface ViewerSlice {
   imageCache: Map<string, string>
   history: FileLeaf[]
   historyIndex: number
+  // 分屏
+  splitMode: boolean
+  activeSide: 'left' | 'right'
+  activeFileRight: FileLeaf | null
+  imageCacheRight: Map<string, string>
   setActiveFile: (file: FileLeaf | null) => void
   navigateTo: (file: FileLeaf) => void
   navigateBack: () => void
   navigateForward: () => void
   setContent: (content: string) => void
   setImageCache: (cache: Map<string, string>) => void
+  setSplitMode: (on: boolean) => void
+  setActiveSide: (side: 'left' | 'right') => void
+  setActiveFileRight: (file: FileLeaf | null) => void
+  setImageCacheRight: (cache: Map<string, string>) => void
 }
 
 interface UISlice {
@@ -58,9 +67,17 @@ export const useStore = create<StoreState>((set) => ({
   imageCache: new Map(),
   history: [],
   historyIndex: -1,
+  splitMode: false,
+  activeSide: 'left',
+  activeFileRight: null,
+  imageCacheRight: new Map(),
   setActiveFile: (file) => set({ activeFile: file }),
   navigateTo: (file) =>
     set((state) => {
+      // 分屏模式下根据 activeSide 决定填入哪侧
+      if (state.splitMode && state.activeSide === 'right') {
+        return { activeFileRight: file }
+      }
       const newHistory = [...state.history.slice(0, state.historyIndex + 1), file]
       return { activeFile: file, history: newHistory, historyIndex: newHistory.length - 1 }
     }),
@@ -78,6 +95,10 @@ export const useStore = create<StoreState>((set) => ({
     }),
   setContent: (content) => set({ content }),
   setImageCache: (cache) => set({ imageCache: cache }),
+  setSplitMode: (on) => set({ splitMode: on, activeSide: 'left', activeFileRight: null }),
+  setActiveSide: (side) => set({ activeSide: side }),
+  setActiveFileRight: (file) => set({ activeFileRight: file }),
+  setImageCacheRight: (cache) => set({ imageCacheRight: cache }),
 
   theme: 'light',
   panelVisible: true,

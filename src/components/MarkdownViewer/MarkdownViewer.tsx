@@ -5,25 +5,26 @@ import RenderedContent from './RenderedContent'
 import { useStore } from '../../store'
 import { renderMarkdown } from '../../lib/markdown'
 import { resolveLocalImages } from '../../lib/imageResolver'
+import type { FileLeaf } from '../../types'
 import 'highlight.js/styles/github.css'
 import 'katex/dist/katex.min.css'
 
-export default function MarkdownViewer() {
-  const activeFile = useStore((s) => s.activeFile)
-  const rootHandle = useStore((s) => s.rootHandle)
-  const imageCache = useStore((s) => s.imageCache)
-  const setImageCache = useStore((s) => s.setImageCache)
+// 单侧阅读面板的加载逻辑
+function usePaneLoader(
+  activeFile: FileLeaf | null,
+  rootHandle: FileSystemDirectoryHandle | null,
+  imageCache: Map<string, string>,
+  setImageCache: (cache: Map<string, string>) => void
+) {
   const imageCacheRef = useRef<Map<string, string>>(new Map())
   const [html, setHtml] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // 同步更新 ref，确保 useEffect 内始终访问最新的 imageCache
   imageCacheRef.current = imageCache
 
   useEffect(() => {
-    if (!activeFile) return
+    if (!activeFile) { setHtml(''); setError(null); return }
 
-    // 切换文件时 revoke 旧 blob URLs
     imageCacheRef.current.forEach((url) => URL.revokeObjectURL(url))
 
     let cancelled = false
@@ -31,7 +32,6 @@ export default function MarkdownViewer() {
     async function load() {
       setError(null)
       try {
-        // 支持两种模式：File System Access API（handle）和本地目录 URL（url）
         let raw: string
         if (activeFile!.url) {
           raw = await fetch(activeFile!.url).then((r) => r.text())
@@ -55,23 +55,43 @@ export default function MarkdownViewer() {
         setHtml(rendered)
         setImageCache(newCache)
       } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : '文件读取失败')
-        }
+        if (!cancelled) setError(e instanceof Error ? e.message : '文件读取失败')
       }
     }
 
     load()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [activeFile, rootHandle])
 
-  if (!activeFile) {
+  return { html, error }
+}
+
+export default function MarkdownViewer() {
+  const activeFile = useStore((s) => s.activeFile)
+  const activeFileRight = useStore((s) => s.activeFileRight)
+  const rootHandle = useStore((s) => s.rootHandle)
+  const imageCache = useStore((s) => s.imageCache)
+  const imageCacheRight = useStore((s) => s.imageCacheRight)
+  const setImageCache = useStore((s) => s.setImageCache)
+  const setImageCacheRight = useStore((s) => s.setImageCacheRight)
+  const splitMode = useStore((s) => s.splitMode)
+  const activeSide = useStore((s) => s.activeSide)
+  const setActiveSide = useStore((s) => s.setActiveSide)
+
+  const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache)
+  const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight)
+
+  if (!splitMode) {
     return (
       <div className={styles.viewer}>
         <ViewerToolbar />
-        <div className={styles.empty}>选择左侧文件开始阅读</div>
+        {!activeFile ? (
+          <div className={styles.empty}>选择左侧文件开始阅读</div>
+        ) : left.error ? (
+          <div className={styles.errorCard}>⚠️ {left.error}</div>
+        ) : (
+          <RenderedContent html={left.html} />
+        )}
       </div>
     )
   }
@@ -79,11 +99,40 @@ export default function MarkdownViewer() {
   return (
     <div className={styles.viewer}>
       <ViewerToolbar />
-      {error ? (
-        <div className={styles.errorCard}>⚠️ {error}</div>
-      ) : (
-        <RenderedContent html={html} />
-      )}
+      <div className={styles.splitContainer}>
+        {/* 左侧 */}
+        <div
+          className={`${styles.splitPane} ${activeSide === 'left' ? styles.activeSplitPane : ''}`}
+          onClick={() => setActiveSide('left')}
+        >
+          <span className={`${styles.splitPaneLabel} ${activeSide === 'left' ? styles.splitPaneLabelActive : ''}`}>
+            左 {activeSide === 'left' ? '●' : ''}
+          </span>
+          {!activeFile ? (
+            <div className={styles.empty}>点击此处，再选择文件</div>
+          ) : left.error ? (
+            <div className={styles.errorCard}>⚠️ {left.error}</div>
+          ) : (
+            <RenderedContent html={left.html} />
+          )}
+        </div>
+        {/* 右侧 */}
+        <div
+          className={`${styles.splitPane} ${activeSide === 'right' ? styles.activeSplitPane : ''}`}
+          onClick={() => setActiveSide('right')}
+        >
+          <span className={`${styles.splitPaneLabel} ${activeSide === 'right' ? styles.splitPaneLabelActive : ''}`}>
+            右 {activeSide === 'right' ? '●' : ''}
+          </span>
+          {!activeFileRight ? (
+            <div className={styles.empty}>点击此处，再选择文件</div>
+          ) : right.error ? (
+            <div className={styles.errorCard}>⚠️ {right.error}</div>
+          ) : (
+            <RenderedContent html={right.html} />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

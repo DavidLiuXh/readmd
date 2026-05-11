@@ -10,6 +10,8 @@ export default function ViewerToolbar() {
   const historyLength = useStore((s) => s.history.length)
   const navigateBack = useStore((s) => s.navigateBack)
   const navigateForward = useStore((s) => s.navigateForward)
+  const splitMode = useStore((s) => s.splitMode)
+  const setSplitMode = useStore((s) => s.setSplitMode)
   const toggleTheme = useThemeToggle()
 
   const canBack = historyIndex > 0
@@ -45,6 +47,13 @@ export default function ViewerToolbar() {
       <span className={styles.fileName}>
         {activeFile ? activeFile.name : 'MD Reader'}
       </span>
+      <button
+        className={`${styles.themeBtn} ${splitMode ? styles.themeBtnActive : ''}`}
+        onClick={() => setSplitMode(!splitMode)}
+        title={splitMode ? '关闭分屏' : '分屏对比'}
+      >
+        ⬜
+      </button>
       <button
         className={styles.themeBtn}
         onClick={toggleTheme}
