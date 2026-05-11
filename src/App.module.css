@@ -1,35 +1,39 @@
 /* 亮色主题变量（默认） */
 :global([data-theme="light"]) {
   --color-bg: #ffffff;
-  --color-bg-sidebar: #f3f3f3;
+  --color-bg-sidebar: #f5f5f5;
   --color-bg-panel: #f8f8f8;
-  --color-bg-hover: #e8e8e8;
-  --color-bg-active: #dce4f5;
-  --color-text: #1e1e1e;
-  --color-text-muted: #6e6e6e;
-  --color-text-active: #0070c9;
-  --color-border: #e0e0e0;
-  --color-accent: #0070c9;
-  --color-icon: #5a5a5a;
-  --color-icon-active: #0070c9;
-  --color-scrollbar: rgba(0, 0, 0, 0.15);
+  --color-bg-hover: #ebebeb;
+  --color-bg-active: #dbeafe;
+  --color-text: #1f2328;
+  --color-text-muted: #656d76;
+  --color-text-active: #0969da;
+  --color-border: #d8dee4;
+  --color-accent: #0969da;
+  --color-icon: #57606a;
+  --color-icon-active: #0969da;
+  --color-scrollbar: rgba(0, 0, 0, 0.12);
+  --color-inline-code-bg: rgba(175, 184, 193, 0.2);
+  --color-inline-code-text: #cf222e;
 }
 
 /* 暗色主题变量 */
 :global([data-theme="dark"]) {
-  --color-bg: #1e1e1e;
-  --color-bg-sidebar: #252526;
-  --color-bg-panel: #2d2d2d;
-  --color-bg-hover: #2a2d2e;
-  --color-bg-active: #094771;
-  --color-text: #cccccc;
-  --color-text-muted: #858585;
-  --color-text-active: #4fc3f7;
-  --color-border: #3e3e3e;
-  --color-accent: #4fc3f7;
-  --color-icon: #858585;
-  --color-icon-active: #ffffff;
-  --color-scrollbar: rgba(255, 255, 255, 0.15);
+  --color-bg: #1a1b1e;
+  --color-bg-sidebar: #212225;
+  --color-bg-panel: #2a2b2e;
+  --color-bg-hover: #313236;
+  --color-bg-active: #0d3d6e;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-text-active: #58a6ff;
+  --color-border: #30363d;
+  --color-accent: #58a6ff;
+  --color-icon: #8b949e;
+  --color-icon-active: #e6edf3;
+  --color-scrollbar: rgba(255, 255, 255, 0.12);
+  --color-inline-code-bg: rgba(110, 118, 129, 0.2);
+  --color-inline-code-text: #f0a078;
 }
 
 /* 根布局 */
@@ -42,4 +46,5 @@
   color: var(--color-text, #1e1e1e);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }

@@ -78,7 +78,8 @@ export default function RenderedContent({ html }: Props) {
       const id = `mermaid-${Date.now()}-${i}`
       try {
         const { svg } = await mermaid.render(id, code)
-        const container = block.closest('pre')
+        // 代码块现在被 .code-block-wrapper 包裹，替换整个 wrapper
+        const container = block.closest('.code-block-wrapper') ?? block.closest('pre')
         if (container) {
           const wrapper = document.createElement('div')
           wrapper.className = 'mermaid-output'

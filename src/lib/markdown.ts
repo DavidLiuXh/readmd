@@ -1,4 +1,4 @@
-import { marked } from 'marked'
+import { marked, type Renderer } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import markedKatex from 'marked-katex-extension'
 import hljs from 'highlight.js'
@@ -25,6 +25,21 @@ export function initMarkdown(): void {
       output: 'html',
     })
   )
+
+  // 给代码块加语言标签包裹层
+  const renderer: Partial<Renderer> = {
+    code({ text, lang }) {
+      const language = lang || ''
+      const highlighted = language && hljs.getLanguage(language)
+        ? hljs.highlight(text, { language }).value
+        : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const langLabel = language
+        ? `<span class="code-block-lang">${language}</span>`
+        : ''
+      return `<div class="code-block-wrapper">${langLabel}<pre><code class="hljs language-${language}">${highlighted}</code></pre></div>`
+    },
+  }
+  marked.use({ renderer })
 }
 
 export async function renderMarkdown(markdown: string): Promise<string> {
