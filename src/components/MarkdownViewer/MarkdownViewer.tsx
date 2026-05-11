@@ -86,7 +86,7 @@ export default function MarkdownViewer() {
       <div className={styles.viewer}>
         <ViewerToolbar />
         {!activeFile ? (
-          <div className={styles.empty}>选择左侧文件开始阅读</div>
+          <div className={styles.empty} />
         ) : left.error ? (
           <div className={styles.errorCard}>⚠️ {left.error}</div>
         ) : (
