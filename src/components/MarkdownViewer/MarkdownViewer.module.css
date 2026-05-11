@@ -82,31 +82,83 @@
   line-height: 1.75;
 }
 
-.contentInner :global(h1),
-.contentInner :global(h2),
-.contentInner :global(h3),
-.contentInner :global(h4) {
+/* 标题层级 */
+.contentInner :global(h1) {
+  font-size: 2em;
+  font-weight: 700;
+  color: var(--color-text);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0.35em;
+  margin-top: 1.6em;
+  margin-bottom: 0.8em;
+}
+
+.contentInner :global(h2) {
+  font-size: 1.5em;
+  font-weight: 600;
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 0.3em;
   margin-top: 1.5em;
+  margin-bottom: 0.6em;
 }
 
+.contentInner :global(h3) {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+}
+
+.contentInner :global(h4) {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+/* 段落间距 */
+.contentInner :global(p) {
+  margin-bottom: 1.1em;
+}
+
+/* 列表 */
+.contentInner :global(ul),
+.contentInner :global(ol) {
+  padding-left: 1.8em;
+  margin-bottom: 1em;
+}
+
+.contentInner :global(li) {
+  margin-bottom: 0.35em;
+}
+
+.contentInner :global(li > ul),
+.contentInner :global(li > ol) {
+  margin-top: 0.3em;
+  margin-bottom: 0;
+}
+
+/* 行内代码 */
 .contentInner :global(code:not([class])) {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
-  border-radius: 3px;
-  padding: 0.1em 0.4em;
-  font-size: 85%;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  border-radius: 4px;
+  padding: 0.15em 0.45em;
+  font-size: 87%;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
+/* 代码块 */
 .contentInner :global(pre) {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 18px 20px;
   overflow: auto;
+  margin-bottom: 1.2em;
 }
 
 .contentInner :global(pre code) {
@@ -114,36 +166,73 @@
   border: none;
   padding: 0;
   font-size: 14px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  line-height: 1.65;
 }
 
+/* 引用块 */
 .contentInner :global(blockquote) {
   border-left: 4px solid var(--color-accent);
-  margin-left: 0;
-  padding-left: 16px;
+  background: var(--color-bg-panel);
+  margin: 0 0 1.2em 0;
+  padding: 10px 16px;
+  border-radius: 0 6px 6px 0;
   color: var(--color-text-muted);
 }
 
+.contentInner :global(blockquote p) {
+  margin-bottom: 0;
+}
+
+/* 链接 */
 .contentInner :global(a) {
   color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
 }
 
+.contentInner :global(a:hover) {
+  text-decoration-color: var(--color-accent);
+}
+
+/* 图片居中 */
 .contentInner :global(img) {
   max-width: 100%;
-  border-radius: 4px;
+  border-radius: 6px;
+  display: block;
+  margin: 1em auto;
 }
 
+/* 分割线 */
+.contentInner :global(hr) {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2em 0;
+}
+
+/* 表格 */
 .contentInner :global(table) {
   border-collapse: collapse;
   width: 100%;
+  margin-bottom: 1.2em;
+  font-size: 15px;
 }
 
 .contentInner :global(th),
 .contentInner :global(td) {
   border: 1px solid var(--color-border);
-  padding: 6px 12px;
+  padding: 8px 14px;
+  text-align: left;
 }
 
 .contentInner :global(th) {
+  background: var(--color-bg-panel);
+  font-weight: 600;
+}
+
+.contentInner :global(tr:nth-child(even) td) {
   background: var(--color-bg-panel);
 }
 
