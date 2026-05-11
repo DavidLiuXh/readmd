@@ -4,7 +4,7 @@ const DB_NAME = 'md-reader'
 const DB_VERSION = 1
 const STORE_HANDLES = 'directory-handles'
 
-interface HandleRecord {
+export interface HandleRecord {
   id: string
   name: string
   handle: FileSystemDirectoryHandle

@@ -55,8 +55,9 @@ export function useOpenDirectory() {
     let handle: FileSystemDirectoryHandle
     try {
       handle = await window.showDirectoryPicker({ mode: 'read' })
-    } catch {
-      return
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+      throw err
     }
 
     const tree = await buildTree(handle)
