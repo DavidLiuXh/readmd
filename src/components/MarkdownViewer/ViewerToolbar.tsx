@@ -49,7 +49,7 @@ export default function ViewerToolbar() {
         →
       </button>
       <span className={styles.fileName}>
-        {activeFile ? activeFile.name : 'MD Reader'}
+        {activeFile ? activeFile.name : 'ReadMD'}
       </span>
       <button
         className={`${styles.themeBtn} ${splitMode ? styles.themeBtnActive : ''}`}

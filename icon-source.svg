@@ -20,13 +20,15 @@
   <!-- 折角三角 -->
   <path d="M82 22 L82 38 L98 38 Z" fill="#1e40af" opacity="0.4"/>
 
-  <!-- MD 标志文字区域底色 -->
-  <rect x="38" y="34" width="46" height="16" rx="3" fill="url(#accent)" opacity="0.15"/>
+  <!-- ReadMD 标志文字区域底色 -->
+  <rect x="34" y="33" width="56" height="18" rx="3" fill="url(#accent)" opacity="0.12"/>
 
-  <!-- "MD" 文字 -->
-  <text x="61" y="47" font-family="'SF Mono', 'Fira Code', monospace"
+  <!-- "ReadMD" 文字：Read 小字 + MD 大字 -->
+  <text x="44" y="43" font-family="'SF Mono', 'Fira Code', monospace"
+        font-size="8" font-weight="500" fill="url(#accent)" opacity="0.8">Read</text>
+  <text x="72" y="47" font-family="'SF Mono', 'Fira Code', monospace"
         font-size="13" font-weight="700" fill="url(#accent)"
-        text-anchor="middle" letter-spacing="1">MD</text>
+        text-anchor="middle" letter-spacing="0.5">MD</text>
 
   <!-- 文档内容线条（模拟文字行） -->
   <!-- 第1行：满行 -->

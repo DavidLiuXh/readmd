@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "MD Reader",
+  "name": "ReadMD",
   "version": "1.1.0",
-  "description": "Browse and read local Markdown files with directory tree",
+  "description": "Browse and read local Markdown files beautifully — with directory tree, split view, dark mode and syntax highlighting.",
   "action": {
     "default_icon": "icons/icon128.png",
-    "default_title": "MD Reader"
+    "default_title": "ReadMD"
   },
   "background": {
     "service_worker": "background.js"
