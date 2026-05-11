@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './MarkdownViewer.module.css'
 import ViewerToolbar from './ViewerToolbar'
 import RenderedContent from './RenderedContent'
@@ -13,14 +13,18 @@ export default function MarkdownViewer() {
   const rootHandle = useStore((s) => s.rootHandle)
   const imageCache = useStore((s) => s.imageCache)
   const setImageCache = useStore((s) => s.setImageCache)
+  const imageCacheRef = useRef<Map<string, string>>(new Map())
   const [html, setHtml] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // 同步更新 ref，确保 useEffect 内始终访问最新的 imageCache
+  imageCacheRef.current = imageCache
 
   useEffect(() => {
     if (!activeFile) return
 
     // 切换文件时 revoke 旧 blob URLs
-    imageCache.forEach((url) => URL.revokeObjectURL(url))
+    imageCacheRef.current.forEach((url) => URL.revokeObjectURL(url))
 
     let cancelled = false
 

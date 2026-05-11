@@ -6,15 +6,16 @@ interface Props {
   html: string
 }
 
-let mermaidInitialized = false
+let lastMermaidTheme: string | null = null
 
 function ensureMermaid(theme: string) {
-  if (!mermaidInitialized) {
+  const mermaidTheme = theme === 'dark' ? 'dark' : 'default'
+  if (lastMermaidTheme !== mermaidTheme) {
     mermaid.initialize({
       startOnLoad: false,
-      theme: theme === 'dark' ? 'dark' : 'default',
+      theme: mermaidTheme,
     })
-    mermaidInitialized = true
+    lastMermaidTheme = mermaidTheme
   }
 }
 
