@@ -7,10 +7,12 @@ export default function RecentDirList() {
   const recentDirs = useStore((s) => s.recentDirs)
   const setRecentDirs = useStore((s) => s.setRecentDirs)
   const restoreDirectory = useRestoreDirectory()
+  const setActiveTab = useStore((s) => s.setActiveTab)
 
   async function handleClick(index: number) {
     const dir = recentDirs[index]
-    await restoreDirectory(dir)
+    const result = await restoreDirectory(dir)
+    if (result === 'granted') setActiveTab('files')
   }
 
   async function handleDelete(e: React.MouseEvent, index: number) {
