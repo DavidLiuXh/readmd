@@ -1,3 +1,7 @@
+import styles from './App.module.css'
+import { useThemeInit } from './hooks/useTheme'
+
 export default function App() {
-  return <div>MD Reader</div>
+  useThemeInit()
+  return <div className={styles.app}>MD Reader</div>
 }
