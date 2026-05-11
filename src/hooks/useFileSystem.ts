@@ -41,15 +41,11 @@ async function buildTree(
 }
 
 export function useOpenDirectory() {
-  const { setRootHandle, setTree, setRecentDirs, recentDirs, setImageCache } = useStore(
-    (s) => ({
-      setRootHandle: s.setRootHandle,
-      setTree: s.setTree,
-      setRecentDirs: s.setRecentDirs,
-      recentDirs: s.recentDirs,
-      setImageCache: s.setImageCache,
-    })
-  )
+  const setRootHandle = useStore((s) => s.setRootHandle)
+  const setTree = useStore((s) => s.setTree)
+  const setRecentDirs = useStore((s) => s.setRecentDirs)
+  const recentDirs = useStore((s) => s.recentDirs)
+  const setImageCache = useStore((s) => s.setImageCache)
 
   return useCallback(async () => {
     let handle: FileSystemDirectoryHandle
@@ -88,11 +84,9 @@ export function useLoadRecentDirs() {
 }
 
 export function useRestoreDirectory() {
-  const { setRootHandle, setTree, setImageCache } = useStore((s) => ({
-    setRootHandle: s.setRootHandle,
-    setTree: s.setTree,
-    setImageCache: s.setImageCache,
-  }))
+  const setRootHandle = useStore((s) => s.setRootHandle)
+  const setTree = useStore((s) => s.setTree)
+  const setImageCache = useStore((s) => s.setImageCache)
 
   return useCallback(
     async (dir: RecentDir): Promise<'granted' | 'prompt' | 'denied'> => {
