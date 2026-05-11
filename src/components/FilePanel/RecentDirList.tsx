@@ -1,18 +1,12 @@
-import { useEffect } from 'react'
 import { useStore } from '../../store'
-import { useLoadRecentDirs, useRestoreDirectory } from '../../hooks/useFileSystem'
+import { useRestoreDirectory } from '../../hooks/useFileSystem'
 import { deleteHandle } from '../../db'
 import styles from './FileTree/FileTree.module.css'
 
 export default function RecentDirList() {
   const recentDirs = useStore((s) => s.recentDirs)
   const setRecentDirs = useStore((s) => s.setRecentDirs)
-  const loadRecentDirs = useLoadRecentDirs()
   const restoreDirectory = useRestoreDirectory()
-
-  useEffect(() => {
-    loadRecentDirs()
-  }, [loadRecentDirs])
 
   async function handleClick(index: number) {
     const dir = recentDirs[index]
@@ -23,7 +17,7 @@ export default function RecentDirList() {
     e.stopPropagation()
     const dir = recentDirs[index]
     await deleteHandle(dir.name)
-    setRecentDirs(recentDirs.filter((_, i) => i !== index))
+    setRecentDirs(recentDirs.filter((d) => d.name !== dir.name))
   }
 
   if (recentDirs.length === 0) {

@@ -37,9 +37,9 @@ export default function TreeNode({ node, searchQuery }: Props) {
         <div className={styles.children}>
           {visibleChildren.map((child) =>
             child.kind === 'directory' ? (
-              <TreeNode key={child.name} node={child} searchQuery={searchQuery} />
+              <TreeNode key={child.kind + ':' + child.name} node={child} searchQuery={searchQuery} />
             ) : (
-              <FileItem key={child.name} file={child} />
+              <FileItem key={child.kind + ':' + child.name} file={child} />
             )
           )}
         </div>

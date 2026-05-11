@@ -20,9 +20,9 @@ export default function FileTree() {
     <div className={styles.tree}>
       {tree.map((node) =>
         node.kind === 'directory' ? (
-          <TreeNode key={node.name} node={node} searchQuery={searchQuery} />
+          <TreeNode key={node.kind + ':' + node.name} node={node} searchQuery={searchQuery} />
         ) : (
-          <FileItem key={node.name} file={node} />
+          <FileItem key={node.kind + ':' + node.name} file={node} />
         )
       )}
     </div>
