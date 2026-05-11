@@ -51,9 +51,7 @@
   btn.onmouseenter = () => btn.style.background = '#005fa3'
   btn.onmouseleave = () => btn.style.background = '#0070c9'
   btn.onclick = () => {
-    const readerUrl = chrome.runtime.getURL('reader.html') +
-      '?dirUrl=' + encodeURIComponent(dirUrl)
-    location.href = readerUrl
+    chrome.runtime.sendMessage({ type: 'OPEN_DIR', dirUrl })
   }
   document.body.appendChild(btn)
 })()
