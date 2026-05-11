@@ -61,7 +61,7 @@ export default function RenderedContent({ html }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const rootHandle = useStore((s) => s.rootHandle)
   const activeFile = useStore((s) => s.activeFile)
-  const setActiveFile = useStore((s) => s.setActiveFile)
+  const navigateTo = useStore((s) => s.navigateTo)
 
   useEffect(() => {
     if (!ref.current) return
@@ -100,12 +100,12 @@ export default function RenderedContent({ html }: Props) {
       e.preventDefault()
       if (!rootHandle || !activeFile) return
       resolveMarkdownLink(href, rootHandle, activeFile.pathSegments).then((leaf) => {
-        if (leaf) setActiveFile(leaf)
+        if (leaf) navigateTo(leaf)
       })
     }
     links.forEach((a) => a.addEventListener('click', handleLinkClick))
     return () => links.forEach((a) => a.removeEventListener('click', handleLinkClick))
-  }, [html, rootHandle, activeFile, setActiveFile])
+  }, [html, rootHandle, activeFile, navigateTo])
 
   return (
     <div

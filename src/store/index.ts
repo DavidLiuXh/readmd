@@ -16,7 +16,12 @@ interface ViewerSlice {
   activeFile: FileLeaf | null
   content: string
   imageCache: Map<string, string>
+  history: FileLeaf[]
+  historyIndex: number
   setActiveFile: (file: FileLeaf | null) => void
+  navigateTo: (file: FileLeaf) => void
+  navigateBack: () => void
+  navigateForward: () => void
   setContent: (content: string) => void
   setImageCache: (cache: Map<string, string>) => void
 }
@@ -51,7 +56,26 @@ export const useStore = create<StoreState>((set) => ({
   activeFile: null,
   content: '',
   imageCache: new Map(),
+  history: [],
+  historyIndex: -1,
   setActiveFile: (file) => set({ activeFile: file }),
+  navigateTo: (file) =>
+    set((state) => {
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), file]
+      return { activeFile: file, history: newHistory, historyIndex: newHistory.length - 1 }
+    }),
+  navigateBack: () =>
+    set((state) => {
+      if (state.historyIndex <= 0) return {}
+      const index = state.historyIndex - 1
+      return { activeFile: state.history[index], historyIndex: index }
+    }),
+  navigateForward: () =>
+    set((state) => {
+      if (state.historyIndex >= state.history.length - 1) return {}
+      const index = state.historyIndex + 1
+      return { activeFile: state.history[index], historyIndex: index }
+    }),
   setContent: (content) => set({ content }),
   setImageCache: (cache) => set({ imageCache: cache }),
 

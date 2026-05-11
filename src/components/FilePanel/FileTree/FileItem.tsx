@@ -8,14 +8,14 @@ interface Props {
 
 export default function FileItem({ file }: Props) {
   const activeFile = useStore((s) => s.activeFile)
-  const setActiveFile = useStore((s) => s.setActiveFile)
+  const navigateTo = useStore((s) => s.navigateTo)
 
   const isActive = activeFile?.handle === file.handle
 
   return (
     <div
       className={`${styles.fileRow} ${isActive ? styles.active : ''}`}
-      onClick={() => setActiveFile(file)}
+      onClick={() => navigateTo(file)}
       title={file.name}
     >
       <span>📄</span>
