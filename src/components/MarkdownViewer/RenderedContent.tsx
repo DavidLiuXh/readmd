@@ -108,10 +108,12 @@ export default function RenderedContent({ html }: Props) {
   }, [html, rootHandle, activeFile, navigateTo])
 
   return (
-    <div
-      ref={ref}
-      className={styles.content}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className={styles.content}>
+      <div
+        ref={ref}
+        className={styles.contentInner}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
   )
 }

@@ -64,11 +64,7 @@
 .content {
   flex: 1;
   overflow: auto;
-  padding: 40px 64px;
   box-sizing: border-box;
-  font-size: 16px;
-  line-height: 1.75;
-  max-width: 860px;
 }
 
 .content::-webkit-scrollbar {
@@ -80,17 +76,25 @@
   border-radius: 4px;
 }
 
-.content :global(h1),
-.content :global(h2),
-.content :global(h3),
-.content :global(h4) {
+.contentInner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 48px;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.contentInner :global(h1),
+.contentInner :global(h2),
+.contentInner :global(h3),
+.contentInner :global(h4) {
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 0.3em;
   margin-top: 1.5em;
 }
 
-.content :global(code:not([class])) {
+.contentInner :global(code:not([class])) {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
   border-radius: 3px;
@@ -99,7 +103,7 @@
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
-.content :global(pre) {
+.contentInner :global(pre) {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
   border-radius: 6px;
@@ -107,50 +111,50 @@
   overflow: auto;
 }
 
-.content :global(pre code) {
+.contentInner :global(pre code) {
   background: transparent;
   border: none;
   padding: 0;
   font-size: 14px;
 }
 
-.content :global(blockquote) {
+.contentInner :global(blockquote) {
   border-left: 4px solid var(--color-accent);
   margin-left: 0;
   padding-left: 16px;
   color: var(--color-text-muted);
 }
 
-.content :global(a) {
+.contentInner :global(a) {
   color: var(--color-accent);
 }
 
-.content :global(img) {
+.contentInner :global(img) {
   max-width: 100%;
   border-radius: 4px;
 }
 
-.content :global(table) {
+.contentInner :global(table) {
   border-collapse: collapse;
   width: 100%;
 }
 
-.content :global(th),
-.content :global(td) {
+.contentInner :global(th),
+.contentInner :global(td) {
   border: 1px solid var(--color-border);
   padding: 6px 12px;
 }
 
-.content :global(th) {
+.contentInner :global(th) {
   background: var(--color-bg-panel);
 }
 
-:global([data-theme="light"]) .content :global(.hljs) {
+:global([data-theme="light"]) .contentInner :global(.hljs) {
   background: #f6f8fa;
   color: #24292e;
 }
 
-:global([data-theme="dark"]) .content :global(.hljs) {
+:global([data-theme="dark"]) .contentInner :global(.hljs) {
   background: #161b22;
   color: #c9d1d9;
 }
