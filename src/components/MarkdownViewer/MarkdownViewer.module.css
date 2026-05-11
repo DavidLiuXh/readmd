@@ -53,8 +53,12 @@
   cursor: pointer;
   color: var(--color-text-muted);
   font-size: 16px;
-  padding: 4px;
+  padding: 4px 6px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .themeBtn:hover {
