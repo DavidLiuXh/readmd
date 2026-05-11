@@ -10,7 +10,9 @@ export default function FileItem({ file }: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const navigateTo = useStore((s) => s.navigateTo)
 
-  const isActive = activeFile?.handle === file.handle
+  const isActive =
+    activeFile !== null &&
+    activeFile.pathSegments.join('/') === file.pathSegments.join('/')
 
   return (
     <div
