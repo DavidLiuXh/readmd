@@ -13,12 +13,12 @@ export default function ActivityBar() {
   const panelVisible = useStore((s) => s.panelVisible)
   const setActiveTab = useStore((s) => s.setActiveTab)
   const setPanelVisible = useStore((s) => s.setPanelVisible)
+  const setSearchQuery = useStore((s) => s.setSearchQuery)
 
   function handleTabClick(id: TabId) {
-    if (!panelVisible) {
-      setPanelVisible(true)
-    }
+    if (!panelVisible) setPanelVisible(true)
     setActiveTab(id)
+    if (id !== 'search') setSearchQuery('')
   }
 
   return (
