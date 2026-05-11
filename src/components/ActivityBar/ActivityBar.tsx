@@ -40,7 +40,6 @@ export default function ActivityBar() {
       <button
         className={styles.iconBtn}
         title="设置"
-        onClick={() => undefined}
       >
         ⚙️
       </button>

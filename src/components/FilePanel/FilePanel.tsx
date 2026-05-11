@@ -16,11 +16,6 @@ export default function FilePanel() {
   const startWidth = useRef(0)
   const latestWidth = useRef(panelWidth)
 
-  // 同步最新宽度到 ref，供 onMouseUp 使用
-  useEffect(() => {
-    latestWidth.current = panelWidth
-  }, [panelWidth])
-
   // 从 chrome.storage 恢复宽度
   useEffect(() => {
     chrome.storage.local.get(STORAGE_KEY, (result) => {
@@ -42,6 +37,7 @@ export default function FilePanel() {
         if (!dragging.current) return
         const delta = e.clientX - startX.current
         const next = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth.current + delta))
+        latestWidth.current = next
         setPanelWidth(next)
       }
 
@@ -61,7 +57,7 @@ export default function FilePanel() {
   return (
     <div
       className={`${styles.panel} ${!panelVisible ? styles.hidden : ''}`}
-      style={{ width: panelVisible ? panelWidth : 0 }}
+      style={{ width: panelVisible ? panelWidth : 0, minWidth: panelVisible ? panelWidth : 0 }}
     >
       <PanelHeader />
       <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
