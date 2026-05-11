@@ -52,7 +52,9 @@ export function useOpenDirectory() {
     try {
       handle = await window.showDirectoryPicker({ mode: 'read' })
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return
+      // AbortError：用户取消；NotAllowedError：系统保护目录，浏览器已有原生提示
+      if (err instanceof DOMException &&
+          (err.name === 'AbortError' || err.name === 'NotAllowedError')) return
       throw err
     }
 
@@ -112,4 +114,36 @@ export function useRestoreDirectory() {
     },
     [setRootHandle, setTree, setImageCache]
   )
+}
+
+// 解析 dirUrl 参数，通过 fetch 获取目录页 HTML，构建虚拟文件树（无需 FileSystemHandle）
+export function useDirUrlMode() {
+  const setTree = useStore((s) => s.setTree)
+  const setImageCache = useStore((s) => s.setImageCache)
+
+  return useCallback(async (dirUrl: string) => {
+    const html = await fetch(dirUrl).then((r) => r.text())
+    const regex = /addRow\("(.*?)",\s*"(.*?)",\s*(\d+),\s*(\d+),\s*"([\d.]+ [BkMG]B?)",\s*(\d+),\s*"(.*?)"\);/g
+    const mdExts = ['.md', '.mkd', '.markdown', '.mdx']
+    const nodes: FileLeaf[] = []
+
+    let m
+    while ((m = regex.exec(html)) !== null) {
+      const name = m[1]
+      const path = m[2]
+      const isFolder = !!parseInt(m[3])
+      if (!isFolder && mdExts.some((ext) => name.toLowerCase().endsWith(ext))) {
+        nodes.push({
+          kind: 'file',
+          name,
+          url: dirUrl + path,
+          pathSegments: [name],
+        })
+      }
+    }
+
+    nodes.sort((a, b) => a.name.localeCompare(b.name))
+    setTree(nodes)
+    setImageCache(new Map())
+  }, [setTree, setImageCache])
 }

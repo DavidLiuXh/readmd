@@ -31,13 +31,19 @@ export default function MarkdownViewer() {
     async function load() {
       setError(null)
       try {
-        const file = await activeFile!.handle.getFile()
-        const raw = await file.text()
+        // 支持两种模式：File System Access API（handle）和本地目录 URL（url）
+        let raw: string
+        if (activeFile!.url) {
+          raw = await fetch(activeFile!.url).then((r) => r.text())
+        } else {
+          const file = await activeFile!.handle!.getFile()
+          raw = await file.text()
+        }
 
         let markdown = raw
         let newCache = new Map<string, string>()
 
-        if (rootHandle) {
+        if (rootHandle && !activeFile!.url) {
           const result = await resolveLocalImages(raw, rootHandle, activeFile!.pathSegments)
           markdown = result.markdown
           newCache = result.cache
