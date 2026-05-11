@@ -154,7 +154,7 @@ npm run build
 
 ## Project Structure
 
-\`\`\`
+```
 readmd/
 ├── public/
 │   ├── manifest.json        # Chrome MV3 config
@@ -184,7 +184,7 @@ readmd/
 ├── vite.config.ts
 ├── tsconfig.json
 └── package.json
-\`\`\`
+```
 
 ---
 
