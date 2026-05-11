@@ -17,6 +17,7 @@
       "run_at": "document_idle"
     }
   ],
+  "homepage_url": "https://github.com/DavidLiuXh/readmd",
   "permissions": ["storage", "tabs"],
   "host_permissions": ["file:///*"],
   "icons": {
