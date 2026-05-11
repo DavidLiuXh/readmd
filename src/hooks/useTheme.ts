@@ -10,6 +10,11 @@ function getSystemTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+function getBrowserLocale(): Locale {
+  const lang = navigator.language || navigator.languages?.[0] || 'en'
+  return lang.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+}
+
 function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute('data-theme', theme)
 }
@@ -26,7 +31,7 @@ export function useThemeInit(): void {
       applyTheme(theme)
 
       const savedLocale = result[LOCALE_KEY] as Locale | undefined
-      if (savedLocale) setLocale(savedLocale)
+      setLocale(savedLocale ?? getBrowserLocale())
     })
   }, [setTheme, setLocale])
 }
