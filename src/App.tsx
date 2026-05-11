@@ -4,6 +4,7 @@ import { useThemeInit } from './hooks/useTheme'
 import { useLoadRecentDirs } from './hooks/useFileSystem'
 import ActivityBar from './components/ActivityBar/ActivityBar'
 import FilePanel from './components/FilePanel/FilePanel'
+import MarkdownViewer from './components/MarkdownViewer/MarkdownViewer'
 
 export default function App() {
   useThemeInit()
@@ -17,7 +18,7 @@ export default function App() {
     <div className={styles.app}>
       <ActivityBar />
       <FilePanel />
-      <div style={{ flex: 1 }}>内容区占位</div>
+      <MarkdownViewer />
     </div>
   )
 }
