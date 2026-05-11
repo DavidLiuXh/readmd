@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <!-- 背景渐变：深蓝到蓝紫 -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af"/>
+      <stop offset="100%" style="stop-color:#4f46e5"/>
+    </linearGradient>
+    <!-- 文字高亮色 -->
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景圆角矩形 -->
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+
+  <!-- 文档主体（白色，带折角） -->
+  <path d="M30 22 L82 22 L98 38 L98 108 L30 108 Z" fill="white" opacity="0.95"/>
+  <!-- 折角三角 -->
+  <path d="M82 22 L82 38 L98 38 Z" fill="#1e40af" opacity="0.4"/>
+
+  <!-- MD 标志文字区域底色 -->
+  <rect x="38" y="34" width="46" height="16" rx="3" fill="url(#accent)" opacity="0.15"/>
+
+  <!-- "MD" 文字 -->
+  <text x="61" y="47" font-family="'SF Mono', 'Fira Code', monospace"
+        font-size="13" font-weight="700" fill="url(#accent)"
+        text-anchor="middle" letter-spacing="1">MD</text>
+
+  <!-- 文档内容线条（模拟文字行） -->
+  <!-- 第1行：满行 -->
+  <rect x="38" y="60" width="52" height="4" rx="2" fill="#1e40af" opacity="0.25"/>
+  <!-- 第2行：满行 -->
+  <rect x="38" y="70" width="52" height="4" rx="2" fill="#1e40af" opacity="0.25"/>
+  <!-- 第3行：半行 -->
+  <rect x="38" y="80" width="32" height="4" rx="2" fill="#1e40af" opacity="0.25"/>
+
+  <!-- 底部高亮蓝线（代码块样式） -->
+  <rect x="38" y="90" width="52" height="8" rx="3" fill="#3b82f6" opacity="0.15"/>
+  <rect x="38" y="90" width="4" height="8" rx="2" fill="#60a5fa" opacity="0.8"/>
+
+</svg>
