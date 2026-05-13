@@ -4,14 +4,16 @@ export interface TocItem {
   level: number
 }
 
+let tocCounter = 0
+
 export function extractToc(html: string): { html: string; items: TocItem[] } {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
   const headings = doc.querySelectorAll('h1, h2, h3')
   const items: TocItem[] = []
 
-  headings.forEach((el, index) => {
-    const id = `toc-${index}`
+  headings.forEach((el) => {
+    const id = `toc-${tocCounter++}`
     el.id = id
     const level = parseInt(el.tagName[1], 10)
     items.push({ id, text: el.textContent?.trim() ?? '', level })
