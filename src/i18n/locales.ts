@@ -31,6 +31,8 @@ export const locales = {
     // ViewerToolbar
     navigateBack: '后退 (Alt+←)',
     navigateForward: '前进 (Alt+→)',
+    refreshDir: '刷新目录',
+    refreshFile: '刷新文件',
     splitOpen: '分屏对比',
     splitClose: '关闭分屏',
     themeDark: '切换暗色主题',
@@ -75,6 +77,8 @@ export const locales = {
     // ViewerToolbar
     navigateBack: 'Back (Alt+←)',
     navigateForward: 'Forward (Alt+→)',
+    refreshDir: 'Refresh Directory',
+    refreshFile: 'Refresh File',
     splitOpen: 'Split View',
     splitClose: 'Close Split',
     themeDark: 'Switch to Dark',
