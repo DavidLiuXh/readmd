@@ -28,7 +28,7 @@ export default function TocPanel({ items, activeId, onClose }: Props) {
         {items.map((item) => (
           <button
             key={item.id}
-            className={`${styles.item} ${LEVEL_CLASS[item.level] ?? ''} ${item.id === activeId ? styles.itemActive : ''}`}
+            className={[styles.item, LEVEL_CLASS[item.level], item.id === activeId ? styles.itemActive : undefined].filter(Boolean).join(' ')}
             onClick={() => handleClick(item.id)}
             title={item.text}
           >
