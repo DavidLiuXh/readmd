@@ -4,7 +4,12 @@ import { useStore } from '../../store'
 import { useThemeToggle, useLocaleToggle } from '../../hooks/useTheme'
 import { useT } from '../../i18n'
 
-export default function ViewerToolbar() {
+interface Props {
+  onReload: () => void
+  canReload: boolean
+}
+
+export default function ViewerToolbar({ onReload, canReload }: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const theme = useStore((s) => s.theme)
   const locale = useStore((s) => s.locale)
@@ -47,6 +52,17 @@ export default function ViewerToolbar() {
         title={t('navigateForward')}
       >
         →
+      </button>
+      <button
+        className={styles.navBtn}
+        onClick={onReload}
+        disabled={!canReload}
+        title={t('refreshFile')}
+      >
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.6 0 3 .68 4 1.76" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <polyline points="12,1 12,4.5 15.5,4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </button>
       <span className={styles.fileName}>
         {activeFile ? activeFile.name : 'ReadMD'}

@@ -10,12 +10,12 @@ import type { FileLeaf } from '../../types'
 import 'highlight.js/styles/github.css'
 import 'katex/dist/katex.min.css'
 
-// 单侧阅读面板的加载逻辑
 function usePaneLoader(
   activeFile: FileLeaf | null,
   rootHandle: FileSystemDirectoryHandle | null,
   imageCache: Map<string, string>,
-  setImageCache: (cache: Map<string, string>) => void
+  setImageCache: (cache: Map<string, string>) => void,
+  reloadKey: number
 ) {
   const imageCacheRef = useRef<Map<string, string>>(new Map())
   const [html, setHtml] = useState('')
@@ -62,7 +62,7 @@ function usePaneLoader(
 
     load()
     return () => { cancelled = true }
-  }, [activeFile, rootHandle])
+  }, [activeFile, rootHandle, reloadKey])
 
   return { html, error }
 }
@@ -79,14 +79,29 @@ export default function MarkdownViewer() {
   const activeSide = useStore((s) => s.activeSide)
   const setActiveSide = useStore((s) => s.setActiveSide)
 
-  const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache)
-  const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight)
+  const [reloadKeyLeft, setReloadKeyLeft] = useState(0)
+  const [reloadKeyRight, setReloadKeyRight] = useState(0)
+
+  const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache, reloadKeyLeft)
+  const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight, reloadKeyRight)
   const t = useT()
+
+  function handleReload() {
+    if (splitMode && activeSide === 'right') {
+      setReloadKeyRight((k) => k + 1)
+    } else {
+      setReloadKeyLeft((k) => k + 1)
+    }
+  }
+
+  const canReload = splitMode
+    ? (activeSide === 'right' ? !!activeFileRight : !!activeFile)
+    : !!activeFile
 
   if (!splitMode) {
     return (
       <div className={styles.viewer}>
-        <ViewerToolbar />
+        <ViewerToolbar onReload={handleReload} canReload={canReload} />
         {!activeFile ? (
           <div className={styles.empty} />
         ) : left.error ? (
@@ -100,7 +115,7 @@ export default function MarkdownViewer() {
 
   return (
     <div className={styles.viewer}>
-      <ViewerToolbar />
+      <ViewerToolbar onReload={handleReload} canReload={canReload} />
       <div className={styles.splitContainer}>
         {/* 左侧 */}
         <div
