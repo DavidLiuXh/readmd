@@ -116,6 +116,21 @@ export function useRestoreDirectory() {
   )
 }
 
+// 直接打开单个 md 文件（fileUrl 参数模式）
+export function useFileUrlMode() {
+  const setTree = useStore((s) => s.setTree)
+  const setImageCache = useStore((s) => s.setImageCache)
+  const navigateTo = useStore((s) => s.navigateTo)
+
+  return useCallback((fileUrl: string) => {
+    const name = decodeURIComponent(fileUrl.split('/').pop() ?? 'file.md')
+    const leaf: FileLeaf = { kind: 'file', name, url: fileUrl, pathSegments: [name] }
+    setTree([leaf])
+    setImageCache(new Map())
+    navigateTo(leaf)
+  }, [setTree, setImageCache, navigateTo])
+}
+
 // 解析 dirUrl 参数，通过 fetch 获取目录页 HTML，构建虚拟文件树（无需 FileSystemHandle）
 export function useDirUrlMode() {
   const setTree = useStore((s) => s.setTree)

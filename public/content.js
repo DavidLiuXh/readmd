@@ -2,8 +2,16 @@
 // Chrome 打开本地目录时自动生成包含 addRow(...) 调用的 HTML，解析它获取文件列表
 
 (function () {
-  // 只在本地目录页运行
   if (location.protocol !== 'file:') return
+
+  // 单个 .md 文件：直接跳转到 reader 页渲染
+  const mdExtsPattern = /\.(md|mkd|markdown|mdx)$/i
+  if (mdExtsPattern.test(location.pathname)) {
+    chrome.runtime.sendMessage({ type: 'OPEN_FILE', fileUrl: location.href })
+    return
+  }
+
+  // 只在本地目录页运行
   if (!location.href.endsWith('/')) return
 
   // 解析 Chrome 目录页中的 addRow 调用，提取 .md 文件
