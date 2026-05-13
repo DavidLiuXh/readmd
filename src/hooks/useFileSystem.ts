@@ -147,3 +147,14 @@ export function useDirUrlMode() {
     setImageCache(new Map())
   }, [setTree, setImageCache])
 }
+
+export function useRefreshDirectory() {
+  const rootHandle = useStore((s) => s.rootHandle)
+  const setTree = useStore((s) => s.setTree)
+
+  return useCallback(async () => {
+    if (!rootHandle) return
+    const tree = await buildTree(rootHandle)
+    setTree(tree)
+  }, [rootHandle, setTree])
+}
