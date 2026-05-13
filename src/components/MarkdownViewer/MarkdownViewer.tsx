@@ -147,7 +147,7 @@ export default function MarkdownViewer() {
         ) : leftPane.error ? (
           <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
         ) : (
-          <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div className={styles.contentWrapper}>
             <RenderedContent
               html={leftToc.html}
               onActiveTocId={leftToc.setActiveId}
@@ -188,7 +188,7 @@ export default function MarkdownViewer() {
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
           ) : (
-            <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className={styles.contentWrapper}>
               <RenderedContent
                 html={leftToc.html}
                 onActiveTocId={leftToc.setActiveId}
@@ -216,7 +216,7 @@ export default function MarkdownViewer() {
           ) : rightPane.error ? (
             <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
           ) : (
-            <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className={styles.contentWrapper}>
               <RenderedContent
                 html={rightToc.html}
                 onActiveTocId={rightToc.setActiveId}

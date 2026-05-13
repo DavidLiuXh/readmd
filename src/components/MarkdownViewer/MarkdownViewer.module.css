@@ -389,3 +389,11 @@
   color: #c53030;
   font-size: 13px;
 }
+
+.contentWrapper {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
