@@ -6,6 +6,7 @@ import type { FileLeaf } from '../../types'
 
 interface Props {
   html: string
+  onActiveTocId?: (id: string) => void
 }
 
 let lastMermaidTheme: string | null = null
@@ -26,7 +27,6 @@ async function resolveMarkdownLink(
   rootHandle: FileSystemDirectoryHandle,
   currentPathSegments: string[]
 ): Promise<FileLeaf | null> {
-  // 只处理相对路径的 .md 链接，跳过 http/https/# 等
   if (/^https?:\/\/|^#|^mailto:/i.test(href)) return null
   if (!href.endsWith('.md')) return null
 
@@ -57,7 +57,7 @@ async function resolveMarkdownLink(
   }
 }
 
-export default function RenderedContent({ html }: Props) {
+export default function RenderedContent({ html, onActiveTocId }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const rootHandle = useStore((s) => s.rootHandle)
   const activeFile = useStore((s) => s.activeFile)
@@ -78,7 +78,6 @@ export default function RenderedContent({ html }: Props) {
       const id = `mermaid-${Date.now()}-${i}`
       try {
         const { svg } = await mermaid.render(id, code)
-        // 代码块现在被 .code-block-wrapper 包裹，替换整个 wrapper
         const container = block.closest('.code-block-wrapper') ?? block.closest('pre')
         if (container) {
           const wrapper = document.createElement('div')
@@ -91,13 +90,13 @@ export default function RenderedContent({ html }: Props) {
       }
     })
 
-    // 拦截 .md 链接点击，在扩展内打开
+    // 拦截 .md 链接点击
     const links = ref.current.querySelectorAll<HTMLAnchorElement>('a[href]')
     const handleLinkClick = (e: MouseEvent) => {
       const a = e.currentTarget as HTMLAnchorElement
       const href = a.getAttribute('href') ?? ''
-      if (/^https?:\/\/|^#|^mailto:/i.test(href)) return // 外部链接放行
-      if (!href.endsWith('.md')) return // 非 md 链接放行
+      if (/^https?:\/\/|^#|^mailto:/i.test(href)) return
+      if (!href.endsWith('.md')) return
       e.preventDefault()
       if (!rootHandle || !activeFile) return
       resolveMarkdownLink(href, rootHandle, activeFile.pathSegments).then((leaf) => {
@@ -105,8 +104,42 @@ export default function RenderedContent({ html }: Props) {
       })
     }
     links.forEach((a) => a.addEventListener('click', handleLinkClick))
-    return () => links.forEach((a) => a.removeEventListener('click', handleLinkClick))
-  }, [html, rootHandle, activeFile, navigateTo])
+
+    // IntersectionObserver：监听 toc 标题，高亮最靠前的可见标题
+    let observer: IntersectionObserver | null = null
+    if (onActiveTocId) {
+      const headings = ref.current.querySelectorAll<HTMLElement>('[id^="toc-"]')
+      const visible = new Set<string>()
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              visible.add(entry.target.id)
+            } else {
+              visible.delete(entry.target.id)
+            }
+          })
+          if (visible.size === 0) return
+          // 取 id 序号最小的（最靠前的标题）
+          const sorted = [...visible].sort((a, b) => {
+            const na = parseInt(a.replace('toc-', ''), 10)
+            const nb = parseInt(b.replace('toc-', ''), 10)
+            return na - nb
+          })
+          onActiveTocId(sorted[0])
+        },
+        { threshold: 0, rootMargin: '-10% 0px -80% 0px' }
+      )
+
+      headings.forEach((h) => observer!.observe(h))
+    }
+
+    return () => {
+      links.forEach((a) => a.removeEventListener('click', handleLinkClick))
+      observer?.disconnect()
+    }
+  }, [html, rootHandle, activeFile, navigateTo, onActiveTocId])
 
   return (
     <div className={styles.content}>
