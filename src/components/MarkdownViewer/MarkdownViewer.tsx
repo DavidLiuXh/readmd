@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './MarkdownViewer.module.css'
 import ViewerToolbar from './ViewerToolbar'
 import RenderedContent from './RenderedContent'
+import TocPanel from './TocPanel/TocPanel'
 import { useStore } from '../../store'
 import { useT } from '../../i18n'
 import { renderMarkdown } from '../../lib/markdown'
 import { resolveLocalImages } from '../../lib/imageResolver'
+import { extractToc } from '../../lib/toc'
+import type { TocItem } from '../../lib/toc'
 import type { FileLeaf } from '../../types'
 import 'highlight.js/styles/github.css'
 import 'katex/dist/katex.min.css'
@@ -18,13 +21,13 @@ function usePaneLoader(
   reloadKey: number
 ) {
   const imageCacheRef = useRef<Map<string, string>>(new Map())
-  const [html, setHtml] = useState('')
+  const [rawHtml, setRawHtml] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   imageCacheRef.current = imageCache
 
   useEffect(() => {
-    if (!activeFile) { setHtml(''); setError(null); return }
+    if (!activeFile) { setRawHtml(''); setError(null); return }
 
     imageCacheRef.current.forEach((url) => URL.revokeObjectURL(url))
 
@@ -53,7 +56,7 @@ function usePaneLoader(
         if (cancelled) return
 
         const rendered = await renderMarkdown(markdown)
-        setHtml(rendered)
+        setRawHtml(rendered)
         setImageCache(newCache)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : '文件读取失败')
@@ -64,7 +67,26 @@ function usePaneLoader(
     return () => { cancelled = true }
   }, [activeFile, rootHandle, reloadKey])
 
-  return { html, error }
+  return { rawHtml, error }
+}
+
+function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
+  const [tocOpen, setTocOpen] = useState(false)
+  const [activeId, setActiveId] = useState('')
+
+  useEffect(() => {
+    setTocOpen(false)
+    setActiveId('')
+  }, [activeFile])
+
+  const { html, items } = useMemo(() => {
+    if (!rawHtml) return { html: '', items: [] as TocItem[] }
+    return extractToc(rawHtml)
+  }, [rawHtml])
+
+  const canToc = items.length > 0
+
+  return { tocOpen, setTocOpen, activeId, setActiveId, html, items, canToc }
 }
 
 export default function MarkdownViewer() {
@@ -81,10 +103,13 @@ export default function MarkdownViewer() {
 
   const [reloadKeyLeft, setReloadKeyLeft] = useState(0)
   const [reloadKeyRight, setReloadKeyRight] = useState(0)
-  const [tocOpen, setTocOpen] = useState(false)
 
-  const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache, reloadKeyLeft)
-  const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight, reloadKeyRight)
+  const leftPane = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache, reloadKeyLeft)
+  const rightPane = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight, reloadKeyRight)
+
+  const leftToc = useTocPane(activeFile, leftPane.rawHtml)
+  const rightToc = useTocPane(activeFileRight, rightPane.rawHtml)
+
   const t = useT()
 
   function handleReload() {
@@ -99,16 +124,42 @@ export default function MarkdownViewer() {
     ? (activeSide === 'right' ? !!activeFileRight : !!activeFile)
     : !!activeFile
 
+  const activeToc = splitMode && activeSide === 'right' ? rightToc : leftToc
+  const tocOpen = activeToc.tocOpen
+  const canToc = activeToc.canToc
+
+  function handleToggleToc() {
+    activeToc.setTocOpen((o) => !o)
+  }
+
   if (!splitMode) {
     return (
       <div className={styles.viewer}>
-        <ViewerToolbar onReload={handleReload} canReload={canReload} tocOpen={tocOpen} onToggleToc={() => setTocOpen((v) => !v)} canToc={!!activeFile} />
+        <ViewerToolbar
+          onReload={handleReload}
+          canReload={canReload}
+          tocOpen={leftToc.tocOpen}
+          onToggleToc={() => leftToc.setTocOpen((o) => !o)}
+          canToc={leftToc.canToc}
+        />
         {!activeFile ? (
           <div className={styles.empty} />
-        ) : left.error ? (
-          <div className={styles.errorCard}>⚠️ {left.error}</div>
+        ) : leftPane.error ? (
+          <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
         ) : (
-          <RenderedContent html={left.html} />
+          <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <RenderedContent
+              html={leftToc.html}
+              onActiveTocId={leftToc.setActiveId}
+            />
+            {leftToc.tocOpen && (
+              <TocPanel
+                items={leftToc.items}
+                activeId={leftToc.activeId}
+                onClose={() => leftToc.setTocOpen(false)}
+              />
+            )}
+          </div>
         )}
       </div>
     )
@@ -116,7 +167,13 @@ export default function MarkdownViewer() {
 
   return (
     <div className={styles.viewer}>
-      <ViewerToolbar onReload={handleReload} canReload={canReload} />
+      <ViewerToolbar
+        onReload={handleReload}
+        canReload={canReload}
+        tocOpen={tocOpen}
+        onToggleToc={handleToggleToc}
+        canToc={canToc}
+      />
       <div className={styles.splitContainer}>
         {/* 左侧 */}
         <div
@@ -128,10 +185,22 @@ export default function MarkdownViewer() {
           </span>
           {!activeFile ? (
             <div className={styles.empty}>{t('splitClickHint')}</div>
-          ) : left.error ? (
-            <div className={styles.errorCard}>⚠️ {left.error}</div>
+          ) : leftPane.error ? (
+            <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
           ) : (
-            <RenderedContent html={left.html} />
+            <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <RenderedContent
+                html={leftToc.html}
+                onActiveTocId={leftToc.setActiveId}
+              />
+              {leftToc.tocOpen && (
+                <TocPanel
+                  items={leftToc.items}
+                  activeId={leftToc.activeId}
+                  onClose={() => leftToc.setTocOpen(false)}
+                />
+              )}
+            </div>
           )}
         </div>
         {/* 右侧 */}
@@ -144,10 +213,22 @@ export default function MarkdownViewer() {
           </span>
           {!activeFileRight ? (
             <div className={styles.empty}>{t('splitClickHint')}</div>
-          ) : right.error ? (
-            <div className={styles.errorCard}>⚠️ {right.error}</div>
+          ) : rightPane.error ? (
+            <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
           ) : (
-            <RenderedContent html={right.html} />
+            <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <RenderedContent
+                html={rightToc.html}
+                onActiveTocId={rightToc.setActiveId}
+              />
+              {rightToc.tocOpen && (
+                <TocPanel
+                  items={rightToc.items}
+                  activeId={rightToc.activeId}
+                  onClose={() => rightToc.setTocOpen(false)}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>

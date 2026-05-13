@@ -132,7 +132,7 @@ export default function RenderedContent({ html, onActiveTocId }: Props) {
         { threshold: 0, rootMargin: '-10% 0px -80% 0px' }
       )
 
-      headings.forEach((h) => observer.observe(h))
+      headings.forEach((h) => observer!.observe(h))
     }
 
     return () => {
