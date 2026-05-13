@@ -47,6 +47,11 @@
   cursor: default;
 }
 
+.navBtnActive {
+  color: var(--color-accent);
+  background: var(--color-bg-active);
+}
+
 .themeBtn {
   border: none;
   background: transparent;

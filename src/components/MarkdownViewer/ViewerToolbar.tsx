@@ -7,9 +7,12 @@ import { useT } from '../../i18n'
 interface Props {
   onReload: () => void
   canReload: boolean
+  tocOpen: boolean
+  onToggleToc: () => void
+  canToc: boolean
 }
 
-export default function ViewerToolbar({ onReload, canReload }: Props) {
+export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc }: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const theme = useStore((s) => s.theme)
   const locale = useStore((s) => s.locale)
@@ -63,6 +66,15 @@ export default function ViewerToolbar({ onReload, canReload }: Props) {
           <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.6 0 3 .68 4 1.76" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           <polyline points="12,1 12,4.5 15.5,4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
+      </button>
+      <button
+        className={[styles.navBtn, tocOpen ? styles.navBtnActive : undefined].filter(Boolean).join(' ')}
+        onClick={onToggleToc}
+        disabled={!canToc}
+        title={t('toc')}
+        style={{ fontSize: 15, fontWeight: 400 }}
+      >
+        ≡
       </button>
       <span className={styles.fileName}>
         {activeFile ? activeFile.name : 'ReadMD'}

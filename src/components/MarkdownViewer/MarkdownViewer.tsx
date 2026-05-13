@@ -81,6 +81,7 @@ export default function MarkdownViewer() {
 
   const [reloadKeyLeft, setReloadKeyLeft] = useState(0)
   const [reloadKeyRight, setReloadKeyRight] = useState(0)
+  const [tocOpen, setTocOpen] = useState(false)
 
   const left = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache, reloadKeyLeft)
   const right = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight, reloadKeyRight)
@@ -101,7 +102,7 @@ export default function MarkdownViewer() {
   if (!splitMode) {
     return (
       <div className={styles.viewer}>
-        <ViewerToolbar onReload={handleReload} canReload={canReload} />
+        <ViewerToolbar onReload={handleReload} canReload={canReload} tocOpen={tocOpen} onToggleToc={() => setTocOpen((v) => !v)} canToc={!!activeFile} />
         {!activeFile ? (
           <div className={styles.empty} />
         ) : left.error ? (
