@@ -68,7 +68,7 @@ export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleTo
         </svg>
       </button>
       <button
-        className={[styles.navBtn, tocOpen ? styles.navBtnActive : undefined].filter(Boolean).join(' ')}
+        className={`${styles.navBtn} ${tocOpen ? styles.navBtnActive : ''}`}
         onClick={onToggleToc}
         disabled={!canToc}
         title={t('toc')}
