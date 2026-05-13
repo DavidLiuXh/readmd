@@ -147,7 +147,7 @@ export default function MarkdownViewer() {
         ) : leftPane.error ? (
           <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
         ) : (
-          <div className={styles.contentWrapper}>
+          <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
             <RenderedContent
               html={leftToc.html}
               onActiveTocId={leftToc.setActiveId}
@@ -188,7 +188,7 @@ export default function MarkdownViewer() {
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
           ) : (
-            <div className={styles.contentWrapper}>
+            <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
               <RenderedContent
                 html={leftToc.html}
                 onActiveTocId={leftToc.setActiveId}
@@ -216,7 +216,7 @@ export default function MarkdownViewer() {
           ) : rightPane.error ? (
             <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
           ) : (
-            <div className={styles.contentWrapper}>
+            <div className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }}>
               <RenderedContent
                 html={rightToc.html}
                 onActiveTocId={rightToc.setActiveId}
