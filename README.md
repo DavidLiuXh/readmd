@@ -21,6 +21,18 @@ A beautiful local Markdown file reader Chrome extension — with directory tree,
 
 ---
 
+## Screenshots
+
+| Light mode | Dark mode |
+|---|---|
+| ![Light mode — file tree and Markdown rendering](screenshot/chrome-extension___ialncbdehidlelmdajgonnjmphefhnan_reader.html.jpg) | ![Dark mode — file tree and Markdown rendering](screenshot/chrome-extension___ialncbdehidlelmdajgonnjmphefhnan_reader.html%20(2).jpg) |
+
+| Split view | TOC panel |
+|---|---|
+| ![Split view — two files side by side](screenshot/chrome-extension___ialncbdehidlelmdajgonnjmphefhnan_reader.html%20(3).jpg) | ![TOC panel — table of contents navigation](screenshot/chrome-extension___ialncbdehidlelmdajgonnjmphefhnan_reader.html%20(4).jpg) |
+
+---
+
 ## Tech Stack
 
 | Layer | Choice |
