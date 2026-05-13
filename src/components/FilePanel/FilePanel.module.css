@@ -60,3 +60,36 @@
   background: var(--color-bg-hover);
   color: var(--color-text);
 }
+
+.refreshBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.refreshBtn.spinning svg {
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
