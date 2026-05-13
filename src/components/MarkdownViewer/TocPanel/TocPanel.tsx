@@ -1,5 +1,6 @@
 import styles from './TocPanel.module.css'
 import type { TocItem } from '../../../lib/toc'
+import { useT } from '../../../i18n'
 
 interface Props {
   items: TocItem[]
@@ -14,6 +15,7 @@ const LEVEL_CLASS: Record<number, string> = {
 }
 
 export default function TocPanel({ items, activeId, onClose }: Props) {
+  const t = useT()
   function handleClick(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -21,8 +23,8 @@ export default function TocPanel({ items, activeId, onClose }: Props) {
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <span>目录</span>
-        <button className={styles.closeBtn} onClick={onClose} title="关闭目录">‹</button>
+        <span>{t('toc')}</span>
+        <button className={styles.closeBtn} onClick={onClose} title={t('toc')}>‹</button>
       </div>
       <div className={styles.list}>
         {items.map((item) => (
