@@ -6,3 +6,5 @@ dist/
 .env.*
 .vscode/
 *.log
+docs/superpowers/
+.superpowers/
