@@ -91,6 +91,18 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   return { tocOpen, setTocOpen, activeId, setActiveId, html, items, canToc }
 }
 
+function handleSelectAll(e: React.KeyboardEvent<HTMLElement>) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+    e.preventDefault()
+    const sel = window.getSelection()
+    if (!sel) return
+    const range = document.createRange()
+    range.selectNodeContents(e.currentTarget)
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+}
+
 function useSourcePane(activeFile: FileLeaf | null) {
   const [sourceOpen, setSourceOpen] = useState(false)
 
@@ -177,7 +189,7 @@ export default function MarkdownViewer() {
         ) : leftSource.sourceOpen ? (
           <pre className={styles.sourceView}>{leftPane.rawMarkdown}</pre>
         ) : (
-          <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
+          <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
             <RenderedContent
               html={leftToc.html}
               onActiveTocId={leftToc.setActiveId}
@@ -221,9 +233,9 @@ export default function MarkdownViewer() {
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
           ) : leftSource.sourceOpen ? (
-            <pre className={styles.sourceView}>{leftPane.rawMarkdown}</pre>
+            <pre className={styles.sourceView} tabIndex={0} onKeyDown={handleSelectAll}>{leftPane.rawMarkdown}</pre>
           ) : (
-            <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
+            <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
               <RenderedContent
                 html={leftToc.html}
                 onActiveTocId={leftToc.setActiveId}
@@ -253,7 +265,7 @@ export default function MarkdownViewer() {
           ) : rightSource.sourceOpen ? (
             <pre className={styles.sourceView}>{rightPane.rawMarkdown}</pre>
           ) : (
-            <div className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }}>
+            <div className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
               <RenderedContent
                 html={rightToc.html}
                 onActiveTocId={rightToc.setActiveId}
