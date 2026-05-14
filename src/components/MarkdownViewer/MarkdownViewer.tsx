@@ -91,18 +91,6 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   return { tocOpen, setTocOpen, activeId, setActiveId, html, items, canToc }
 }
 
-function handleSelectAll(e: React.KeyboardEvent<HTMLElement>) {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-    e.preventDefault()
-    const sel = window.getSelection()
-    if (!sel) return
-    const range = document.createRange()
-    range.selectNodeContents(e.currentTarget)
-    sel.removeAllRanges()
-    sel.addRange(range)
-  }
-}
-
 function useSourcePane(activeFile: FileLeaf | null) {
   const [sourceOpen, setSourceOpen] = useState(false)
 
@@ -127,6 +115,9 @@ export default function MarkdownViewer() {
 
   const [reloadKeyLeft, setReloadKeyLeft] = useState(0)
   const [reloadKeyRight, setReloadKeyRight] = useState(0)
+
+  const leftContentRef = useRef<HTMLElement | null>(null)
+  const rightContentRef = useRef<HTMLElement | null>(null)
 
   const leftPane = usePaneLoader(activeFile, rootHandle, imageCache, setImageCache, reloadKeyLeft)
   const rightPane = usePaneLoader(activeFileRight, rootHandle, imageCacheRight, setImageCacheRight, reloadKeyRight)
@@ -159,6 +150,26 @@ export default function MarkdownViewer() {
     activeToc.setTocOpen((o) => !o)
   }
 
+  // 全局 Ctrl+A：选中当前焦点所在内容区
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return
+      const active = document.activeElement
+      const targets = [leftContentRef.current, rightContentRef.current].filter(Boolean) as HTMLElement[]
+      const target = targets.find((el) => el.contains(active) || el === active)
+      if (!target) return
+      e.preventDefault()
+      const sel = window.getSelection()
+      if (!sel) return
+      const range = document.createRange()
+      range.selectNodeContents(target)
+      sel.removeAllRanges()
+      sel.addRange(range)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   const activeSource = splitMode && activeSide === 'right' ? rightSource : leftSource
   const sourceOpen = activeSource.sourceOpen
   const canSource = splitMode
@@ -187,9 +198,9 @@ export default function MarkdownViewer() {
         ) : leftPane.error ? (
           <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
         ) : leftSource.sourceOpen ? (
-          <pre className={styles.sourceView}>{leftPane.rawMarkdown}</pre>
+          <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{leftPane.rawMarkdown}</pre>
         ) : (
-          <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
+          <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
             <RenderedContent
               html={leftToc.html}
               onActiveTocId={leftToc.setActiveId}
@@ -233,9 +244,9 @@ export default function MarkdownViewer() {
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
           ) : leftSource.sourceOpen ? (
-            <pre className={styles.sourceView} tabIndex={0} onKeyDown={handleSelectAll}>{leftPane.rawMarkdown}</pre>
+            <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{leftPane.rawMarkdown}</pre>
           ) : (
-            <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
+            <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
               <RenderedContent
                 html={leftToc.html}
                 onActiveTocId={leftToc.setActiveId}
@@ -263,9 +274,9 @@ export default function MarkdownViewer() {
           ) : rightPane.error ? (
             <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
           ) : rightSource.sourceOpen ? (
-            <pre className={styles.sourceView}>{rightPane.rawMarkdown}</pre>
+            <pre ref={(el) => { rightContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{rightPane.rawMarkdown}</pre>
           ) : (
-            <div className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }} tabIndex={0} onKeyDown={handleSelectAll}>
+            <div ref={(el) => { rightContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
               <RenderedContent
                 html={rightToc.html}
                 onActiveTocId={rightToc.setActiveId}
