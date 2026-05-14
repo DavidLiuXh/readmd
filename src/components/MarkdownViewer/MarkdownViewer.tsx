@@ -22,12 +22,13 @@ function usePaneLoader(
 ) {
   const imageCacheRef = useRef<Map<string, string>>(new Map())
   const [rawHtml, setRawHtml] = useState('')
+  const [rawMarkdown, setRawMarkdown] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   imageCacheRef.current = imageCache
 
   useEffect(() => {
-    if (!activeFile) { setRawHtml(''); setError(null); return }
+    if (!activeFile) { setRawHtml(''); setRawMarkdown(''); setError(null); return }
 
     imageCacheRef.current.forEach((url) => URL.revokeObjectURL(url))
 
@@ -57,6 +58,7 @@ function usePaneLoader(
 
         const rendered = await renderMarkdown(markdown)
         setRawHtml(rendered)
+        setRawMarkdown(raw)
         setImageCache(newCache)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : '文件读取失败')
@@ -67,7 +69,7 @@ function usePaneLoader(
     return () => { cancelled = true }
   }, [activeFile, rootHandle, reloadKey])
 
-  return { rawHtml, error }
+  return { rawHtml, rawMarkdown, error }
 }
 
 function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
@@ -87,6 +89,16 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const canToc = items.length > 0
 
   return { tocOpen, setTocOpen, activeId, setActiveId, html, items, canToc }
+}
+
+function useSourcePane(activeFile: FileLeaf | null) {
+  const [sourceOpen, setSourceOpen] = useState(false)
+
+  useEffect(() => {
+    setSourceOpen(false)
+  }, [activeFile])
+
+  return { sourceOpen, setSourceOpen }
 }
 
 export default function MarkdownViewer() {
@@ -110,6 +122,9 @@ export default function MarkdownViewer() {
   const leftToc = useTocPane(activeFile, leftPane.rawHtml)
   const rightToc = useTocPane(activeFileRight, rightPane.rawHtml)
 
+  const leftSource = useSourcePane(activeFile)
+  const rightSource = useSourcePane(activeFileRight)
+
   const t = useT()
 
   function handleReload() {
@@ -132,6 +147,16 @@ export default function MarkdownViewer() {
     activeToc.setTocOpen((o) => !o)
   }
 
+  const activeSource = splitMode && activeSide === 'right' ? rightSource : leftSource
+  const sourceOpen = activeSource.sourceOpen
+  const canSource = splitMode
+    ? (activeSide === 'right' ? !!activeFileRight : !!activeFile)
+    : !!activeFile
+
+  function handleToggleSource() {
+    activeSource.setSourceOpen((o) => !o)
+  }
+
   if (!splitMode) {
     return (
       <div className={styles.viewer}>
@@ -141,11 +166,16 @@ export default function MarkdownViewer() {
           tocOpen={leftToc.tocOpen}
           onToggleToc={() => leftToc.setTocOpen((o) => !o)}
           canToc={leftToc.canToc}
+          sourceOpen={leftSource.sourceOpen}
+          onToggleSource={() => leftSource.setSourceOpen((o) => !o)}
+          canSource={!!activeFile}
         />
         {!activeFile ? (
           <div className={styles.empty} />
         ) : leftPane.error ? (
           <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
+        ) : leftSource.sourceOpen ? (
+          <pre className={styles.sourceView}>{leftPane.rawMarkdown}</pre>
         ) : (
           <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
             <RenderedContent
@@ -173,6 +203,9 @@ export default function MarkdownViewer() {
         tocOpen={tocOpen}
         onToggleToc={handleToggleToc}
         canToc={canToc}
+        sourceOpen={sourceOpen}
+        onToggleSource={handleToggleSource}
+        canSource={canSource}
       />
       <div className={styles.splitContainer}>
         {/* 左侧 */}
@@ -187,6 +220,8 @@ export default function MarkdownViewer() {
             <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
+          ) : leftSource.sourceOpen ? (
+            <pre className={styles.sourceView}>{leftPane.rawMarkdown}</pre>
           ) : (
             <div className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }}>
               <RenderedContent
@@ -215,6 +250,8 @@ export default function MarkdownViewer() {
             <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : rightPane.error ? (
             <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
+          ) : rightSource.sourceOpen ? (
+            <pre className={styles.sourceView}>{rightPane.rawMarkdown}</pre>
           ) : (
             <div className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }}>
               <RenderedContent

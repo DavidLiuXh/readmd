@@ -10,9 +10,12 @@ interface Props {
   tocOpen: boolean
   onToggleToc: () => void
   canToc: boolean
+  sourceOpen: boolean
+  onToggleSource: () => void
+  canSource: boolean
 }
 
-export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc }: Props) {
+export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc, sourceOpen, onToggleSource, canSource }: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const theme = useStore((s) => s.theme)
   const locale = useStore((s) => s.locale)
@@ -75,6 +78,15 @@ export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleTo
         style={{ fontSize: 15, fontWeight: 400 }}
       >
         ≡
+      </button>
+      <button
+        className={`${styles.navBtn} ${sourceOpen ? styles.navBtnActive : ''}`}
+        onClick={onToggleSource}
+        disabled={!canSource}
+        title={t('sourceView')}
+        style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0 }}
+      >
+        {'</>'}
       </button>
       <span className={styles.fileName}>
         {activeFile ? activeFile.name : 'ReadMD'}

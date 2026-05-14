@@ -398,3 +398,18 @@
   flex-direction: column;
   transition: padding-right 0.2s ease;
 }
+
+.sourceView {
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+  padding: 24px 28px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text);
+  background: var(--color-bg-panel);
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+}
