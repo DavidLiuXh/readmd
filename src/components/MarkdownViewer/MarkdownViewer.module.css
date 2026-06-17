@@ -399,6 +399,38 @@
   transition: padding-right 0.2s ease;
 }
 
+.sideSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sideBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+
+.sideBtn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.sideBtnActive {
+  background: var(--color-bg-active);
+  color: var(--color-accent);
+}
+
 .sourceView {
   flex: 1;
   overflow: auto;

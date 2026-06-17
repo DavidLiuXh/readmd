@@ -229,6 +229,13 @@ export default function MarkdownViewer() {
         sourceOpen={sourceOpen}
         onToggleSource={handleToggleSource}
         canSource={canSource}
+        activeSide={activeSide}
+        onSwitchSide={setActiveSide}
+        currentFileName={
+          activeSide === 'right'
+            ? (activeFileRight?.name ?? '')
+            : (activeFile?.name ?? '')
+        }
       />
       <div className={styles.splitContainer}>
         {/* 左侧 */}

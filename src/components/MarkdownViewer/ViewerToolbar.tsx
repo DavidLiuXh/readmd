@@ -13,9 +13,12 @@ interface Props {
   sourceOpen: boolean
   onToggleSource: () => void
   canSource: boolean
+  activeSide?: 'left' | 'right'
+  onSwitchSide?: (side: 'left' | 'right') => void
+  currentFileName?: string
 }
 
-export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc, sourceOpen, onToggleSource, canSource }: Props) {
+export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc, sourceOpen, onToggleSource, canSource, activeSide, onSwitchSide, currentFileName }: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const theme = useStore((s) => s.theme)
   const locale = useStore((s) => s.locale)
@@ -88,8 +91,26 @@ export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleTo
       >
         {'</>'}
       </button>
+      {activeSide !== undefined && onSwitchSide && (
+        <span className={styles.sideSwitcher}>
+          <button
+            className={`${styles.sideBtn} ${activeSide === 'left' ? styles.sideBtnActive : ''}`}
+            onClick={() => onSwitchSide('left')}
+            title={t('splitLabelLeft')}
+          >
+            {t('splitLabelLeft')}
+          </button>
+          <button
+            className={`${styles.sideBtn} ${activeSide === 'right' ? styles.sideBtnActive : ''}`}
+            onClick={() => onSwitchSide('right')}
+            title={t('splitLabelRight')}
+          >
+            {t('splitLabelRight')}
+          </button>
+        </span>
+      )}
       <span className={styles.fileName}>
-        {activeFile ? activeFile.name : 'ReadMD'}
+        {currentFileName ?? (activeFile ? activeFile.name : 'ReadMD')}
       </span>
       <button
         className={`${styles.themeBtn} ${splitMode ? styles.themeBtnActive : ''}`}
