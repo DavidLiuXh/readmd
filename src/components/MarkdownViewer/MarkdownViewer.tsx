@@ -76,6 +76,9 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const [tocOpen, setTocOpen] = useState(false)
   const [activeId, setActiveId] = useState('')
   const prevTocOpenRef = useRef(false)
+  // 用 ref 锁定关闭瞬间的 activeId，防止过渡期间 Observer 更新污染
+  const activeIdRef = useRef('')
+  activeIdRef.current = activeId
 
   useEffect(() => {
     setTocOpen(false)
@@ -84,16 +87,19 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   }, [activeFile])
 
   // 关闭目录时，等 padding-right 过渡结束（200ms）后将激活标题滚回视图
+  // 只依赖 tocOpen，避免过渡期间 activeId 变化重新触发计时器
   useEffect(() => {
     const wasOpen = prevTocOpenRef.current
     prevTocOpenRef.current = tocOpen
-    if (wasOpen && !tocOpen && activeId) {
-      const timer = setTimeout(() => {
-        document.getElementById(activeId)?.scrollIntoView({ block: 'start' })
-      }, 220)
-      return () => clearTimeout(timer)
-    }
-  }, [tocOpen, activeId])
+    if (!wasOpen || tocOpen) return
+    const idAtClose = activeIdRef.current
+    if (!idAtClose) return
+    const timer = setTimeout(() => {
+      document.getElementById(idAtClose)?.scrollIntoView({ block: 'start' })
+    }, 220)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tocOpen])
 
   const { html, items } = useMemo(() => {
     if (!rawHtml) return { html: '', items: [] as TocItem[] }
