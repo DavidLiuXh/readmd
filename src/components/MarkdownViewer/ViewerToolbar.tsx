@@ -10,15 +10,25 @@ interface Props {
   tocOpen: boolean
   onToggleToc: () => void
   canToc: boolean
-  sourceOpen: boolean
-  onToggleSource: () => void
-  canSource: boolean
+  editOpen: boolean
+  onToggleEdit: () => void
+  canViewOrEdit: boolean
+  isEditable: boolean       // 是否可写（有 handle）
+  isDirty: boolean          // 是否有未保存修改
+  onSave: () => void
   activeSide?: 'left' | 'right'
   onSwitchSide?: (side: 'left' | 'right') => void
   currentFileName?: string
 }
 
-export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleToc, canToc, sourceOpen, onToggleSource, canSource, activeSide, onSwitchSide, currentFileName }: Props) {
+export default function ViewerToolbar({
+  onReload, canReload,
+  tocOpen, onToggleToc, canToc,
+  editOpen, onToggleEdit, canViewOrEdit,
+  isEditable, isDirty, onSave,
+  activeSide, onSwitchSide,
+  currentFileName,
+}: Props) {
   const activeFile = useStore((s) => s.activeFile)
   const theme = useStore((s) => s.theme)
   const locale = useStore((s) => s.locale)
@@ -82,15 +92,28 @@ export default function ViewerToolbar({ onReload, canReload, tocOpen, onToggleTo
       >
         ≡
       </button>
+      {/* 编辑源码 / 查看源码 切换按钮 */}
       <button
-        className={`${styles.navBtn} ${sourceOpen ? styles.navBtnActive : ''}`}
-        onClick={onToggleSource}
-        disabled={!canSource}
-        title={t('sourceView')}
+        className={`${styles.navBtn} ${editOpen ? styles.navBtnActive : ''}`}
+        onClick={onToggleEdit}
+        disabled={!canViewOrEdit}
+        title={isEditable ? t('editSource') : t('sourceView')}
         style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0 }}
       >
         {'</>'}
       </button>
+      {/* 保存按钮：仅编辑模式下可写文件显示 */}
+      {editOpen && isEditable && (
+        <button
+          className={`${styles.navBtn} ${isDirty ? styles.navBtnDirty : ''}`}
+          onClick={onSave}
+          disabled={!isDirty}
+          title={t('saveFile')}
+          style={{ fontSize: 12, fontWeight: 600 }}
+        >
+          {t('saveFile')}{isDirty ? ' ●' : ''}
+        </button>
+      )}
       {activeSide !== undefined && onSwitchSide && (
         <span className={styles.sideSwitcher}>
           <button

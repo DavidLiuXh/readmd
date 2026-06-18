@@ -91,14 +91,45 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   return { tocOpen, setTocOpen, activeId, setActiveId, html, items, canToc }
 }
 
-function useSourcePane(activeFile: FileLeaf | null) {
-  const [sourceOpen, setSourceOpen] = useState(false)
+// 编辑/查看源码面板状态
+function useEditPane(activeFile: FileLeaf | null, rawMarkdown: string) {
+  const [open, setOpen] = useState(false)
+  const [content, setContent] = useState('')
+  const isDirtyRef = useRef(false)
+  const [isDirty, setIsDirty] = useState(false)
 
+  // 文件切换：始终重置
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    setSourceOpen(false)
+    setOpen(false)
+    isDirtyRef.current = false
+    setIsDirty(false)
+    setContent(rawMarkdown)
   }, [activeFile])
 
-  return { sourceOpen, setSourceOpen }
+  // 同一文件刷新（rawMarkdown 更新）：未编辑时同步
+  useEffect(() => {
+    if (!isDirtyRef.current) {
+      setContent(rawMarkdown)
+    }
+  }, [rawMarkdown])
+
+  // 是否可写：有 handle 即可写回
+  const canEdit = !!activeFile?.handle
+
+  function handleChange(val: string) {
+    setContent(val)
+    const dirty = val !== rawMarkdown
+    isDirtyRef.current = dirty
+    setIsDirty(dirty)
+  }
+
+  function markClean() {
+    isDirtyRef.current = false
+    setIsDirty(false)
+  }
+
+  return { open, setOpen, content, handleChange, isDirty, canEdit, markClean }
 }
 
 export default function MarkdownViewer() {
@@ -125,8 +156,8 @@ export default function MarkdownViewer() {
   const leftToc = useTocPane(activeFile, leftPane.rawHtml)
   const rightToc = useTocPane(activeFileRight, rightPane.rawHtml)
 
-  const leftSource = useSourcePane(activeFile)
-  const rightSource = useSourcePane(activeFileRight)
+  const leftEdit = useEditPane(activeFile, leftPane.rawMarkdown)
+  const rightEdit = useEditPane(activeFileRight, rightPane.rawMarkdown)
 
   const t = useT()
 
@@ -150,36 +181,67 @@ export default function MarkdownViewer() {
     activeToc.setTocOpen((o) => !o)
   }
 
-  // 全局 Ctrl+A：选中当前焦点所在内容区
+  const activeEdit = splitMode && activeSide === 'right' ? rightEdit : leftEdit
+  const editOpen = activeEdit.open
+  const canViewOrEdit = splitMode
+    ? (activeSide === 'right' ? !!activeFileRight : !!activeFile)
+    : !!activeFile
+
+  function handleToggleEdit() {
+    activeEdit.setOpen((o) => !o)
+  }
+
+  // 保存当前激活侧文件（仅 handle 模式可写）
+  const handleSaveRef = useRef<() => void>(() => {})
+  function handleSave() {
+    const isRight = splitMode && activeSide === 'right'
+    const edit = isRight ? rightEdit : leftEdit
+    const file = isRight ? activeFileRight : activeFile
+    const triggerReload = isRight
+      ? () => setReloadKeyRight((k) => k + 1)
+      : () => setReloadKeyLeft((k) => k + 1)
+
+    if (!file?.handle || !edit.isDirty) return
+
+    file.handle.createWritable()
+      .then(async (writable) => {
+        await writable.write(edit.content)
+        await writable.close()
+        edit.markClean()
+        triggerReload()
+      })
+      .catch((e: unknown) => console.error('保存失败:', e))
+  }
+  handleSaveRef.current = handleSave
+
+  // 全局键盘：Ctrl+S 保存 / Ctrl+A 选中内容区
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (!((e.ctrlKey || e.metaKey) && e.key === 'a')) return
-      const active = document.activeElement
-      const targets = [leftContentRef.current, rightContentRef.current].filter(Boolean) as HTMLElement[]
-      const target = targets.find((el) => el.contains(active) || el === active)
-      if (!target) return
-      e.preventDefault()
-      const sel = window.getSelection()
-      if (!sel) return
-      const range = document.createRange()
-      range.selectNodeContents(target)
-      sel.removeAllRanges()
-      sel.addRange(range)
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && e.key === 's') {
+        e.preventDefault()
+        handleSaveRef.current()
+        return
+      }
+      if (mod && e.key === 'a') {
+        const active = document.activeElement
+        const targets = [leftContentRef.current, rightContentRef.current].filter(Boolean) as HTMLElement[]
+        const target = targets.find((el) => el.contains(active) || el === active)
+        if (!target) return
+        e.preventDefault()
+        const sel = window.getSelection()
+        if (!sel) return
+        const range = document.createRange()
+        range.selectNodeContents(target)
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [])
 
-  const activeSource = splitMode && activeSide === 'right' ? rightSource : leftSource
-  const sourceOpen = activeSource.sourceOpen
-  const canSource = splitMode
-    ? (activeSide === 'right' ? !!activeFileRight : !!activeFile)
-    : !!activeFile
-
-  function handleToggleSource() {
-    activeSource.setSourceOpen((o) => !o)
-  }
-
+  // ── 非分屏模式 ──────────────────────────────────────────────
   if (!splitMode) {
     return (
       <div className={styles.viewer}>
@@ -189,16 +251,32 @@ export default function MarkdownViewer() {
           tocOpen={leftToc.tocOpen}
           onToggleToc={() => leftToc.setTocOpen((o) => !o)}
           canToc={leftToc.canToc}
-          sourceOpen={leftSource.sourceOpen}
-          onToggleSource={() => leftSource.setSourceOpen((o) => !o)}
-          canSource={!!activeFile}
+          editOpen={leftEdit.open}
+          onToggleEdit={() => leftEdit.setOpen((o) => !o)}
+          canViewOrEdit={!!activeFile}
+          isEditable={leftEdit.canEdit}
+          isDirty={leftEdit.isDirty}
+          onSave={handleSave}
         />
         {!activeFile ? (
           <div className={styles.empty} />
         ) : leftPane.error ? (
           <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
-        ) : leftSource.sourceOpen ? (
-          <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{leftPane.rawMarkdown}</pre>
+        ) : leftEdit.open ? (
+          leftEdit.canEdit ? (
+            <textarea
+              ref={(el) => { leftContentRef.current = el }}
+              className={styles.sourceEditor}
+              value={leftEdit.content}
+              onChange={(e) => leftEdit.handleChange(e.target.value)}
+              spellCheck={false}
+              tabIndex={-1}
+            />
+          ) : (
+            <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>
+              {leftPane.rawMarkdown}
+            </pre>
+          )
         ) : (
           <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
             <RenderedContent
@@ -218,6 +296,7 @@ export default function MarkdownViewer() {
     )
   }
 
+  // ── 分屏模式 ────────────────────────────────────────────────
   return (
     <div className={styles.viewer}>
       <ViewerToolbar
@@ -226,9 +305,12 @@ export default function MarkdownViewer() {
         tocOpen={tocOpen}
         onToggleToc={handleToggleToc}
         canToc={canToc}
-        sourceOpen={sourceOpen}
-        onToggleSource={handleToggleSource}
-        canSource={canSource}
+        editOpen={editOpen}
+        onToggleEdit={handleToggleEdit}
+        canViewOrEdit={canViewOrEdit}
+        isEditable={activeEdit.canEdit}
+        isDirty={activeEdit.isDirty}
+        onSave={handleSave}
         activeSide={activeSide}
         onSwitchSide={setActiveSide}
         currentFileName={
@@ -250,8 +332,21 @@ export default function MarkdownViewer() {
             <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : leftPane.error ? (
             <div className={styles.errorCard}>⚠️ {leftPane.error}</div>
-          ) : leftSource.sourceOpen ? (
-            <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{leftPane.rawMarkdown}</pre>
+          ) : leftEdit.open ? (
+            leftEdit.canEdit ? (
+              <textarea
+                ref={(el) => { leftContentRef.current = el }}
+                className={styles.sourceEditor}
+                value={leftEdit.content}
+                onChange={(e) => leftEdit.handleChange(e.target.value)}
+                spellCheck={false}
+                tabIndex={-1}
+              />
+            ) : (
+              <pre ref={(el) => { leftContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>
+                {leftPane.rawMarkdown}
+              </pre>
+            )
           ) : (
             <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
               <RenderedContent
@@ -280,8 +375,21 @@ export default function MarkdownViewer() {
             <div className={styles.empty}>{t('splitClickHint')}</div>
           ) : rightPane.error ? (
             <div className={styles.errorCard}>⚠️ {rightPane.error}</div>
-          ) : rightSource.sourceOpen ? (
-            <pre ref={(el) => { rightContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>{rightPane.rawMarkdown}</pre>
+          ) : rightEdit.open ? (
+            rightEdit.canEdit ? (
+              <textarea
+                ref={(el) => { rightContentRef.current = el }}
+                className={styles.sourceEditor}
+                value={rightEdit.content}
+                onChange={(e) => rightEdit.handleChange(e.target.value)}
+                spellCheck={false}
+                tabIndex={-1}
+              />
+            ) : (
+              <pre ref={(el) => { rightContentRef.current = el }} className={styles.sourceView} tabIndex={-1}>
+                {rightPane.rawMarkdown}
+              </pre>
+            )
           ) : (
             <div ref={(el) => { rightContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
               <RenderedContent

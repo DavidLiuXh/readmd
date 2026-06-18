@@ -52,6 +52,10 @@
   background: var(--color-bg-active);
 }
 
+.navBtnDirty {
+  color: var(--color-accent);
+}
+
 .themeBtn {
   border: none;
   background: transparent;
@@ -444,4 +448,32 @@
   white-space: pre-wrap;
   word-break: break-word;
   tab-size: 2;
+}
+
+.sourceEditor {
+  flex: 1;
+  margin: 0;
+  padding: 24px 28px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text);
+  background: var(--color-bg-panel);
+  border: none;
+  outline: none;
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.sourceEditor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sourceEditor::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar);
+  border-radius: 4px;
 }
