@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './MarkdownViewer.module.css'
 import ViewerToolbar from './ViewerToolbar'
 import RenderedContent from './RenderedContent'
@@ -72,60 +72,91 @@ function usePaneLoader(
   return { rawHtml, rawMarkdown, error }
 }
 
+// 从标题元素向上找到有 padding-right 过渡的 contentWrapper
+// 路径：heading → … → .contentInner → .content(overflow:auto) → .contentWrapper
+function findContentWrapper(el: HTMLElement): HTMLElement | null {
+  let cur: HTMLElement | null = el.parentElement
+  while (cur) {
+    if (getComputedStyle(cur).overflowY === 'auto') {
+      return cur.parentElement as HTMLElement | null
+    }
+    cur = cur.parentElement
+  }
+  return null
+}
+
 function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const [tocOpen, setTocOpen] = useState(false)
   const [activeId, setActiveId] = useState('')
   const prevTocOpenRef = useRef(false)
+  // 始终保持最新 activeId，供 effect 闭包访问
   const activeIdRef = useRef('')
   activeIdRef.current = activeId
-  const headingTopRef = useRef(0)   // 目录打开期间持续记录激活标题的 viewport 位置
 
-  // ① 每次渲染后同步快照标题位置（仅目录打开时）
-  //    目录关闭那一帧 tocOpen=false，跳过快照，ref 保留的是"关闭前"的值
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(() => {
-    if (!tocOpen || !activeId) return
-    const el = document.getElementById(activeId)
-    if (el) headingTopRef.current = el.getBoundingClientRect().top
-  })
-
-  // ② 文件切换：重置所有状态
   useEffect(() => {
     setTocOpen(false)
     setActiveId('')
     prevTocOpenRef.current = false
-    headingTopRef.current = 0
   }, [activeFile])
 
-  // ③ 目录关闭：在浏览器绘制前立即修正 scrollTop
-  //    此时 DOM 已是 paddingRight=0 的最终布局，可直接测 after 值
-  //    delta = after - before，补偿文字重排导致的偏移
-  useLayoutEffect(() => {
+  // 目录关闭时，等 padding-right 过渡真正结束后再 scrollIntoView
+  //
+  // 之所以必须等 transitionend：
+  //   useLayoutEffect 执行时过渡还在起始帧，getBoundingClientRect
+  //   拿到的仍是 paddingRight=220 的布局，delta 为 0，根本没有修正效果。
+  //   只有在 transitionend 之后布局才完全稳定（paddingRight=0），
+  //   此时 scrollIntoView 才能把标题精确定位到视口顶部。
+  //
+  // idAtClose 在 useEffect 同步执行时（IntersectionObserver 尚未更新 activeId）
+  // 就已锁定，避免过渡期间 Observer 把 activeId 改成别的标题。
+  useEffect(() => {
     const wasOpen = prevTocOpenRef.current
     prevTocOpenRef.current = tocOpen
     if (!wasOpen || tocOpen) return
 
-    const idAtClose = activeIdRef.current
-    const topBefore = headingTopRef.current
-    if (!idAtClose || !topBefore) return
+    const idAtClose = activeIdRef.current   // 关闭瞬间锁定
+    if (!idAtClose) return
 
     const el = document.getElementById(idAtClose)
     if (!el) return
 
-    const topAfter = el.getBoundingClientRect().top
-    const delta = topAfter - topBefore
-    if (Math.abs(delta) < 1) return
-
-    // 向上遍历找到滚动容器并修正 scrollTop
-    let parent = el.parentElement
-    while (parent) {
-      const { overflowY } = getComputedStyle(parent)
-      if (overflowY === 'auto' || overflowY === 'scroll') {
-        parent.scrollTop += delta
-        break
-      }
-      parent = parent.parentElement
+    function scrollToHeading() {
+      document.getElementById(idAtClose)?.scrollIntoView({ block: 'start' })
     }
+
+    const contentWrapper = findContentWrapper(el)
+    if (!contentWrapper) {
+      scrollToHeading()
+      return
+    }
+
+    let settled = false
+
+    function onTransitionEnd(e: TransitionEvent) {
+      if (e.target !== contentWrapper || e.propertyName !== 'padding-right') return
+      if (settled) return
+      settled = true
+      clearTimeout(fallback)
+      contentWrapper!.removeEventListener('transitionend', onTransitionEnd)
+      scrollToHeading()
+    }
+
+    contentWrapper.addEventListener('transitionend', onTransitionEnd)
+
+    // 兜底：过渡被禁用（如 prefers-reduced-motion）时 transitionend 不触发
+    const fallback = setTimeout(() => {
+      if (settled) return
+      settled = true
+      contentWrapper.removeEventListener('transitionend', onTransitionEnd)
+      scrollToHeading()
+    }, 300)
+
+    return () => {
+      settled = true
+      contentWrapper.removeEventListener('transitionend', onTransitionEnd)
+      clearTimeout(fallback)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tocOpen])
 
   const { html, items } = useMemo(() => {
