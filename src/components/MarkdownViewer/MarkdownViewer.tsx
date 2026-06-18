@@ -78,10 +78,10 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const prevTocOpenRef = useRef(false)
   const activeIdRef = useRef('')
   activeIdRef.current = activeId
-  // 目录打开期间，每次渲染前（useLayoutEffect 无依赖）记录激活标题的 viewport 位置
-  // 这样目录关闭瞬间 ref 里保存的是"关闭前"的真实位置（paddingRight=220 的布局）
-  const headingTopRef = useRef(0)
+  const headingTopRef = useRef(0)   // 目录打开期间持续记录激活标题的 viewport 位置
 
+  // ① 每次渲染后同步快照标题位置（仅目录打开时）
+  //    目录关闭那一帧 tocOpen=false，跳过快照，ref 保留的是"关闭前"的值
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     if (!tocOpen || !activeId) return
@@ -89,6 +89,7 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
     if (el) headingTopRef.current = el.getBoundingClientRect().top
   })
 
+  // ② 文件切换：重置所有状态
   useEffect(() => {
     setTocOpen(false)
     setActiveId('')
@@ -96,34 +97,35 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
     headingTopRef.current = 0
   }, [activeFile])
 
-  // 关闭目录时，等 padding-right 过渡结束后，用 delta 修正 scrollTop
-  // 只依赖 tocOpen，避免过渡期间 activeId 更新重新触发计时器
-  useEffect(() => {
+  // ③ 目录关闭：在浏览器绘制前立即修正 scrollTop
+  //    此时 DOM 已是 paddingRight=0 的最终布局，可直接测 after 值
+  //    delta = after - before，补偿文字重排导致的偏移
+  useLayoutEffect(() => {
     const wasOpen = prevTocOpenRef.current
     prevTocOpenRef.current = tocOpen
     if (!wasOpen || tocOpen) return
+
     const idAtClose = activeIdRef.current
     const topBefore = headingTopRef.current
     if (!idAtClose || !topBefore) return
-    const timer = setTimeout(() => {
-      const el = document.getElementById(idAtClose)
-      if (!el) return
-      const topAfter = el.getBoundingClientRect().top
-      const delta = topAfter - topBefore
-      if (Math.abs(delta) < 1) return
-      // 向上遍历找到滚动容器（overflow: auto）并修正 scrollTop
-      let parent = el.parentElement
-      while (parent) {
-        const { overflowY } = getComputedStyle(parent)
-        if (overflowY === 'auto' || overflowY === 'scroll') {
-          parent.scrollTop += delta
-          break
-        }
-        parent = parent.parentElement
+
+    const el = document.getElementById(idAtClose)
+    if (!el) return
+
+    const topAfter = el.getBoundingClientRect().top
+    const delta = topAfter - topBefore
+    if (Math.abs(delta) < 1) return
+
+    // 向上遍历找到滚动容器并修正 scrollTop
+    let parent = el.parentElement
+    while (parent) {
+      const { overflowY } = getComputedStyle(parent)
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        parent.scrollTop += delta
+        break
       }
-    }, 220)
-    return () => clearTimeout(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      parent = parent.parentElement
+    }
   }, [tocOpen])
 
   const { html, items } = useMemo(() => {
