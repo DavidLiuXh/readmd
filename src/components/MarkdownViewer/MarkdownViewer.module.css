@@ -400,6 +400,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: padding-right 0.2s ease;
 }
 
 .sideSwitcher {
