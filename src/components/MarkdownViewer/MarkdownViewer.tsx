@@ -75,11 +75,23 @@ function usePaneLoader(
 function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const [tocOpen, setTocOpen] = useState(false)
   const [activeId, setActiveId] = useState('')
+  const prevTocOpenRef = useRef(false)
 
   useEffect(() => {
     setTocOpen(false)
     setActiveId('')
+    prevTocOpenRef.current = false
   }, [activeFile])
+
+  // 关闭目录时，将当前激活标题滚回视图（防止目录打开期间用户滚动导致定位丢失）
+  useEffect(() => {
+    if (prevTocOpenRef.current && !tocOpen && activeId) {
+      requestAnimationFrame(() => {
+        document.getElementById(activeId)?.scrollIntoView({ block: 'start' })
+      })
+    }
+    prevTocOpenRef.current = tocOpen
+  }, [tocOpen, activeId])
 
   const { html, items } = useMemo(() => {
     if (!rawHtml) return { html: '', items: [] as TocItem[] }
@@ -278,7 +290,7 @@ export default function MarkdownViewer() {
             </pre>
           )
         ) : (
-          <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
+          <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} tabIndex={-1}>
             <RenderedContent
               html={leftToc.html}
               onActiveTocId={leftToc.setActiveId}
@@ -348,7 +360,7 @@ export default function MarkdownViewer() {
               </pre>
             )
           ) : (
-            <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: leftToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
+            <div ref={(el) => { leftContentRef.current = el }} className={styles.contentWrapper} tabIndex={-1}>
               <RenderedContent
                 html={leftToc.html}
                 onActiveTocId={leftToc.setActiveId}
@@ -391,7 +403,7 @@ export default function MarkdownViewer() {
               </pre>
             )
           ) : (
-            <div ref={(el) => { rightContentRef.current = el }} className={styles.contentWrapper} style={{ paddingRight: rightToc.tocOpen ? 220 : 0 }} tabIndex={-1}>
+            <div ref={(el) => { rightContentRef.current = el }} className={styles.contentWrapper} tabIndex={-1}>
               <RenderedContent
                 html={rightToc.html}
                 onActiveTocId={rightToc.setActiveId}
