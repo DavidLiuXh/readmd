@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import styles from './MarkdownViewer.module.css'
 import ViewerToolbar from './ViewerToolbar'
 import RenderedContent from './RenderedContent'
@@ -76,26 +76,51 @@ function useTocPane(activeFile: FileLeaf | null, rawHtml: string) {
   const [tocOpen, setTocOpen] = useState(false)
   const [activeId, setActiveId] = useState('')
   const prevTocOpenRef = useRef(false)
-  // 用 ref 锁定关闭瞬间的 activeId，防止过渡期间 Observer 更新污染
   const activeIdRef = useRef('')
   activeIdRef.current = activeId
+  // 目录打开期间，每次渲染前（useLayoutEffect 无依赖）记录激活标题的 viewport 位置
+  // 这样目录关闭瞬间 ref 里保存的是"关闭前"的真实位置（paddingRight=220 的布局）
+  const headingTopRef = useRef(0)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    if (!tocOpen || !activeId) return
+    const el = document.getElementById(activeId)
+    if (el) headingTopRef.current = el.getBoundingClientRect().top
+  })
 
   useEffect(() => {
     setTocOpen(false)
     setActiveId('')
     prevTocOpenRef.current = false
+    headingTopRef.current = 0
   }, [activeFile])
 
-  // 关闭目录时，等 padding-right 过渡结束（200ms）后将激活标题滚回视图
-  // 只依赖 tocOpen，避免过渡期间 activeId 变化重新触发计时器
+  // 关闭目录时，等 padding-right 过渡结束后，用 delta 修正 scrollTop
+  // 只依赖 tocOpen，避免过渡期间 activeId 更新重新触发计时器
   useEffect(() => {
     const wasOpen = prevTocOpenRef.current
     prevTocOpenRef.current = tocOpen
     if (!wasOpen || tocOpen) return
     const idAtClose = activeIdRef.current
-    if (!idAtClose) return
+    const topBefore = headingTopRef.current
+    if (!idAtClose || !topBefore) return
     const timer = setTimeout(() => {
-      document.getElementById(idAtClose)?.scrollIntoView({ block: 'start' })
+      const el = document.getElementById(idAtClose)
+      if (!el) return
+      const topAfter = el.getBoundingClientRect().top
+      const delta = topAfter - topBefore
+      if (Math.abs(delta) < 1) return
+      // 向上遍历找到滚动容器（overflow: auto）并修正 scrollTop
+      let parent = el.parentElement
+      while (parent) {
+        const { overflowY } = getComputedStyle(parent)
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+          parent.scrollTop += delta
+          break
+        }
+        parent = parent.parentElement
+      }
     }, 220)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
